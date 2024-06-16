@@ -11,4 +11,42 @@ body {
      background-color: black;
      color: white;
      margin: 0;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     min-height: 100vh;
+}
+
+.board {
+     background: url("/board.png") no-repeat;
+     background-size: cover;
+     width: 400px;
+     height: 400px;
+     display: grid;
+     grid-template-rows: repeat(5, 80px);
+     grid-template-columns: repeat(5, 80px);
+     column-gap: 19px;
+     row-gap: 18px;
+}
+
+.cell {
+     position: relative;
+     transform: translate(-18px, -19px);
+     height: 40px;
+     cursor: pointer;
+     color: red;
+     font-size: 2rem;
+     max-width: 41px;
+     border-radius: 50%;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+}
+
+.active {
+     background-color: #6b7042;
+}
+
+.cell > img {
+     width: 40px;
 }
