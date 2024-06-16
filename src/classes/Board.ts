@@ -8,6 +8,8 @@ interface IBoard {
      positions: number[];
 }
 
+const boardElement = document.getElementById("board") as HTMLDivElement;
+
 export class Board implements IBoard {
      positions: number[];
      constructor() {
@@ -22,15 +24,7 @@ export class Board implements IBoard {
           this.positions[position] = PIECE_ROLE.GOAT;
      }
 
-     moveTiger() {}
-
-     moveGoat() {}
-
      drawBoard() {
-          const boardElement = document.getElementById(
-               "board"
-          ) as HTMLDivElement;
-
           for (let i = 0; i < 25; i++) {
                const cell = document.createElement("div");
                cell.classList.add("cell");
@@ -44,10 +38,9 @@ export class Board implements IBoard {
 
      updateBoard() {
           const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+          // displayin correct image for each cell
           for (let i = 0; i < this.positions.length; i++) {
                let cell = cells[i];
-               let icon = new Image();
-               icon.src = tigerIcon;
                if (this.positions[i] === PIECE_ROLE.TIGER) {
                     cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
                } else if (this.positions[i] === PIECE_ROLE.GOAT) {

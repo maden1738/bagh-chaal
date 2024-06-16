@@ -8,7 +8,7 @@
 }
 
 body {
-     background-color: black;
+     background-color: #3a5a40;
      color: white;
      margin: 0;
      display: flex;
@@ -49,4 +49,8 @@ body {
 
 .cell > img {
      width: 40px;
+}
+
+.game-info {
+     margin-right: 30px;
 }

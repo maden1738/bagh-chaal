@@ -1,10 +1,6 @@
 import "./style.css";
 import { Game } from "./classes/Game";
 import { PIECE_ROLE } from "./constants";
-const game = new Game();
-
-game.board.drawBoard();
-game.board.updateBoard();
 
 type ClickedPiece = {
      piece: PIECE_ROLE | null;
@@ -17,32 +13,70 @@ let clickedPiece: ClickedPiece = {
 };
 
 export function handleBoardClick(event: MouseEvent) {
-     const cellId = parseInt(
+     const targetPosition = parseInt(
           (event.currentTarget as HTMLDivElement).dataset.id || "0"
      );
      // clicking on empty cell and no piece clicked on last move
-     if (!game.board.positions[cellId] && !clickedPiece) {
-          return;
+     if (game.board.positions[targetPosition] === 0 && !clickedPiece.piece) {
+          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               game.board.positions[targetPosition] = PIECE_ROLE.GOAT;
+               game.goatsPlaced++;
+               game.currentTurn = PIECE_ROLE.TIGER;
+               game.generateMoves();
+               game.findNumTigersTrapped();
+               game.board.updateBoard();
+               game.updateDOM();
+               game.checkWinCondition();
+          }
      }
      // clicking a piece
-     if (game.board.positions[cellId]) {
+     else if (game.board.positions[targetPosition] === game.currentTurn) {
+          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               return;
+          }
           clickedPiece = {
-               piece: game.board.positions[cellId],
-               position: cellId,
+               piece: game.board.positions[targetPosition],
+               position: targetPosition,
           };
      }
      // a piece was clicked on last move and an empty cell is clicked now
-     if (
-          clickedPiece.piece != null &&
+     else if (
+          clickedPiece.piece === game.currentTurn &&
           clickedPiece.position != null &&
-          game.board.positions[cellId] === 0
+          game.board.positions[targetPosition] === 0
      ) {
+          // cannot move goat before all 20 goats have been placed
+          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               return;
+          }
           let startPosition = clickedPiece.position;
-          game.board.positions[startPosition] = 0;
-          game.board.positions[cellId] = clickedPiece.piece;
-          clickedPiece = { piece: null, position: null };
-          game.board.updateBoard();
+          const foundMove = game.movesArr.find(
+               (move) =>
+                    move.startPosition === startPosition &&
+                    move.targetPosition === targetPosition
+          );
+          if (foundMove) {
+               game.board.positions[startPosition] = 0;
+               game.board.positions[targetPosition] = clickedPiece.piece;
+               if (foundMove.capturedGoat) {
+                    game.board.positions[foundMove.capturedGoat] = 0;
+                    game.goatsKilled++;
+               }
+               clickedPiece = { piece: null, position: null };
+               game.currentTurn =
+                    game.currentTurn === PIECE_ROLE.GOAT
+                         ? PIECE_ROLE.TIGER
+                         : PIECE_ROLE.GOAT;
+               game.generateMoves();
+               game.findNumTigersTrapped();
+               game.board.updateBoard();
+               game.updateDOM();
+               game.checkWinCondition();
+          }
      }
 }
 
-console.log(game.board.positions);
+const game = new Game();
+
+game.board.drawBoard();
+game.board.updateBoard();
