@@ -12,6 +12,7 @@ body {
      color: white;
      margin: 0;
      display: flex;
+     gap: 2rem;
      justify-content: center;
      align-items: center;
      min-height: 100vh;
@@ -53,4 +54,24 @@ body {
 
 .game-info {
      margin-right: 30px;
+}
+
+label {
+     display: block;
+}
+
+.board {
+     margin-top: 1rem;
+}
+
+.game {
+     display: none;
+}
+
+.hidden {
+     display: none;
+}
+
+button {
+     cursor: pointer;
 }

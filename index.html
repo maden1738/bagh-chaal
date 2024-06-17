@@ -9,13 +9,34 @@
           <title>Bagh-Chaal</title>
      </head>
      <body>
-          <div class="game-info">
-               <div>Current Turn: <span id="current-turn">Goat</span></div>
-               <div>Goats Placed: <span id="goats-placed">0</span></div>
-               <div>Goats Killed: <span id="goats-killed">0</span></div>
-               <div>Tigers Trapped: <span id="tigers-trapped">0</span></div>
+          <div class="game-settings">
+               <div class="game-mode-wrapper">
+                    <label for="game-mode">Choose game mode</label>
+                    <select name="game-mode" id="game-mode">
+                         <option value="2-player">2 Player</option>
+                         <option value="vs-computer">Vs Computer</option>
+                    </select>
+               </div>
+               <div class="role-wrapper hidden">
+                    <label for="role">Play as </label>
+                    <select name="role" id="role">
+                         <option value="Goat">Goat</option>
+                         <option value="Tiger">Tiger</option>
+                    </select>
+               </div>
           </div>
-          <div class="board" id="board"></div>
+          <button class="start-btn">Start Game</button>
+          <div class="game">
+               <div class="game-info">
+                    <div>Current Turn: <span id="current-turn">Goat</span></div>
+                    <div>Goats Placed: <span id="goats-placed">0</span></div>
+                    <div>Goats Killed: <span id="goats-killed">0</span></div>
+                    <div>
+                         Tigers Trapped: <span id="tigers-trapped">0</span>
+                    </div>
+               </div>
+               <div class="board" id="board"></div>
+          </div>
           <script type="module" src="/src/main.ts"></script>
      </body>
 </html>

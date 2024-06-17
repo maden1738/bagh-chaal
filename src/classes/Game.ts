@@ -3,6 +3,8 @@ import { Board } from "./Board";
 import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
 import { Move } from "./Move";
+import { Player } from "./Player";
+import { getRandomInt } from "../utils/getRandomInt";
 
 const numCells = calcNumOfCells();
 const currentTurnSpan = document.getElementById(
@@ -24,6 +26,12 @@ interface IGame {
      totalTigers: number;
 }
 
+type GameProps = {
+     player1: Player;
+     player2: Player;
+     vsComputer: boolean;
+};
+
 export class Game implements IGame {
      currentTurn: PIECE_ROLE;
      goatsPlaced: number;
@@ -33,8 +41,15 @@ export class Game implements IGame {
      goatsKilled: number;
      board: Board;
      movesArr: Move[];
+     player1: Player;
+     player2: Player;
+     vsComputer: boolean;
 
-     constructor() {
+     constructor({ player1, player2, vsComputer = false }: GameProps) {
+          this.player1 = player1;
+          this.player2 = player2;
+          this.vsComputer = vsComputer;
+
           this.goatsPlaced = 0;
           this.tigersTrapped = 0;
           this.goatsKilled = 0;
@@ -194,5 +209,44 @@ export class Game implements IGame {
           } else if (this.goatsKilled >= 5) {
                console.warn("tiger won");
           }
+     }
+
+     updateState() {
+          this.currentTurn =
+               this.currentTurn === PIECE_ROLE.GOAT
+                    ? PIECE_ROLE.TIGER
+                    : PIECE_ROLE.GOAT;
+          this.generateMoves();
+          this.findNumTigersTrapped();
+          this.board.updateBoard();
+          this.updateDOM();
+          this.checkWinCondition();
+          if (this.vsComputer && this.currentTurn === this.player2.piece) {
+               this.makeMove();
+          }
+     }
+
+     makeMove() {
+          const max = this.movesArr.length;
+          const min = 0;
+          const randomIndex = getRandomInt(min, max);
+          const computerMove = this.movesArr[randomIndex];
+          this.updatePosition(computerMove);
+     }
+
+     updatePosition({ startPosition, targetPosition, capturedGoat }: Move) {
+          if (startPosition >= 0) {
+               this.board.emptyCell(startPosition);
+          }
+          if (this.currentTurn === PIECE_ROLE.GOAT) {
+               this.board.addGoat(targetPosition);
+          } else {
+               if (capturedGoat) {
+                    this.board.emptyCell(capturedGoat);
+                    this.goatsKilled++;
+               }
+               this.board.addTiger(targetPosition);
+          }
+          this.updateState();
      }
 }

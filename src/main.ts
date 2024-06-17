@@ -1,6 +1,7 @@
 import "./style.css";
 import { Game } from "./classes/Game";
-import { PIECE_ROLE } from "./constants";
+import { GAME_MODE, PIECE_ROLE, PLAYER_ROLE } from "./constants";
+import { Player } from "./classes/Player";
 
 type ClickedPiece = {
      piece: PIECE_ROLE | null;
@@ -16,17 +17,17 @@ export function handleBoardClick(event: MouseEvent) {
      const targetPosition = parseInt(
           (event.currentTarget as HTMLDivElement).dataset.id || "0"
      );
+
+     if (game.vsComputer && game.currentTurn !== player1.piece) {
+          return;
+     }
+
      // clicking on empty cell and no piece clicked on last move
      if (game.board.positions[targetPosition] === 0 && !clickedPiece.piece) {
           if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
-               game.board.positions[targetPosition] = PIECE_ROLE.GOAT;
+               game.board.addGoat(targetPosition);
                game.goatsPlaced++;
-               game.currentTurn = PIECE_ROLE.TIGER;
-               game.generateMoves();
-               game.findNumTigersTrapped();
-               game.board.updateBoard();
-               game.updateDOM();
-               game.checkWinCondition();
+               game.updateState();
           }
      }
      // clicking a piece
@@ -63,20 +64,86 @@ export function handleBoardClick(event: MouseEvent) {
                     game.goatsKilled++;
                }
                clickedPiece = { piece: null, position: null };
-               game.currentTurn =
-                    game.currentTurn === PIECE_ROLE.GOAT
-                         ? PIECE_ROLE.TIGER
-                         : PIECE_ROLE.GOAT;
-               game.generateMoves();
-               game.findNumTigersTrapped();
-               game.board.updateBoard();
-               game.updateDOM();
-               game.checkWinCondition();
+               game.updateState();
           }
      }
 }
 
-const game = new Game();
+let player1 = new Player({
+     name: "player1",
+     piece: PIECE_ROLE.TIGER,
+     isComputer: false,
+});
+let player2 = new Player({
+     name: "player2",
+     piece: PIECE_ROLE.GOAT,
+     isComputer: false,
+});
 
-game.board.drawBoard();
-game.board.updateBoard();
+let game = new Game({ player1, player2, vsComputer: false });
+console.log(game);
+
+const gameSettings = document.querySelector(".game-settings") as HTMLDivElement;
+const gameModeInput = document.getElementById("game-mode") as HTMLSelectElement;
+const role = document.getElementById("role") as HTMLSelectElement;
+const startBtn = document.querySelector(".start-btn") as HTMLButtonElement;
+const gameElement = document.querySelector(".game") as HTMLDivElement;
+const roleWrapper = document.querySelector(".role-wrapper") as HTMLDivElement;
+
+gameModeInput.addEventListener("change", () => {
+     roleWrapper.classList.toggle("hidden");
+});
+
+startBtn.addEventListener("click", () => {
+     startGame();
+});
+
+function startGame() {
+     console.log(gameModeInput.value);
+     if (gameModeInput.value === GAME_MODE.VS_COMPUTER) {
+          console.log("here");
+
+          const humanRole =
+               role.value === PLAYER_ROLE.GOAT
+                    ? PIECE_ROLE.GOAT
+                    : PIECE_ROLE.TIGER;
+          const computerRole =
+               humanRole === PIECE_ROLE.GOAT
+                    ? PIECE_ROLE.TIGER
+                    : PIECE_ROLE.GOAT;
+          player1 = new Player({
+               name: "Human",
+               piece: humanRole,
+               isComputer: false,
+          });
+          player2 = new Player({
+               name: "Ribby",
+               piece: computerRole,
+               isComputer: true,
+          });
+          game = new Game({ player1, player2, vsComputer: true });
+          game.board.drawBoard();
+          game.board.updateBoard();
+          if (player2.piece === PIECE_ROLE.GOAT) {
+               game.makeMove();
+          }
+          console.log(game);
+     } else {
+          player1 = new Player({
+               name: "player1",
+               piece: PIECE_ROLE.TIGER,
+               isComputer: false,
+          });
+          player2 = new Player({
+               name: "player2",
+               piece: PIECE_ROLE.GOAT,
+               isComputer: false,
+          });
+          game.board.drawBoard();
+          game.board.updateBoard();
+          console.log(game);
+     }
+     gameSettings.style.display = "none";
+     startBtn.style.display = "none";
+     gameElement.style.display = "block";
+}

@@ -16,6 +16,10 @@ export class Board implements IBoard {
           this.positions = Array(25).fill(EMPTY);
      }
 
+     emptyCell(position: number) {
+          this.positions[position] = 0;
+     }
+
      addTiger(position: number) {
           this.positions[position] = PIECE_ROLE.TIGER;
      }
