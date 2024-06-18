@@ -81,7 +81,6 @@ let player2 = new Player({
 });
 
 let game = new Game({ player1, player2, vsComputer: false });
-console.log(game);
 
 const gameSettings = document.querySelector(".game-settings") as HTMLDivElement;
 const gameModeInput = document.getElementById("game-mode") as HTMLSelectElement;
@@ -101,8 +100,6 @@ startBtn.addEventListener("click", () => {
 function startGame() {
      console.log(gameModeInput.value);
      if (gameModeInput.value === GAME_MODE.VS_COMPUTER) {
-          console.log("here");
-
           const humanRole =
                role.value === PLAYER_ROLE.GOAT
                     ? PIECE_ROLE.GOAT
@@ -127,7 +124,6 @@ function startGame() {
           if (player2.piece === PIECE_ROLE.GOAT) {
                game.makeMove();
           }
-          console.log(game);
      } else {
           player1 = new Player({
                name: "player1",
@@ -141,7 +137,6 @@ function startGame() {
           });
           game.board.drawBoard();
           game.board.updateBoard();
-          console.log(game);
      }
      gameSettings.style.display = "none";
      startBtn.style.display = "none";
