@@ -4,7 +4,6 @@ import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
 import { Move } from "./Move";
 import { Player } from "./Player";
-import { getRandomInt } from "../utils/getRandomInt";
 
 const numCells = calcNumOfCells();
 const currentTurnSpan = document.getElementById(
@@ -17,6 +16,8 @@ const goatsKilled = document.getElementById("goats-killed") as HTMLSpanElement;
 const tigersTrapped = document.getElementById(
      "tigers-trapped"
 ) as HTMLSpanElement;
+
+let maxDepth = 2;
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -63,21 +64,24 @@ export class Game implements IGame {
           this.board.addTiger(20);
           this.board.addTiger(24);
           this.currentTurn = PIECE_ROLE.GOAT;
-          this.movesArr = this.generateMoves();
+          this.movesArr = this.generateMoves(
+               this.board.positions,
+               this.currentTurn
+          );
      }
 
-     generateMoves() {
+     generateMoves(positions: number[], currentTurn: PIECE_ROLE) {
           // calulates possible moves for all pieces
-          let movesArr = [];
+          let movesArr: Move[] = [];
           for (
                let startPosition = 0;
-               startPosition < this.board.positions.length;
+               startPosition < positions.length;
                startPosition++
           ) {
-               let currentPiece = this.board.positions[startPosition];
+               let currentPiece = positions[startPosition];
                // rules for placing goats
                if (
-                    this.currentTurn === PIECE_ROLE.GOAT &&
+                    currentTurn === PIECE_ROLE.GOAT &&
                     currentPiece === EMPTY &&
                     this.goatsPlaced < 20
                ) {
@@ -89,7 +93,7 @@ export class Game implements IGame {
                     );
                }
                // moving goat / tiger
-               else if (currentPiece === this.currentTurn) {
+               else if (currentPiece === currentTurn) {
                     // cant move goat without placing all 20 goats first
                     if (
                          currentPiece === PIECE_ROLE.GOAT &&
@@ -101,7 +105,7 @@ export class Game implements IGame {
                          if (numCells[startPosition][i] > 0) {
                               let targetPosition = startPosition + OFFSETS[i];
                               let targetPositionPiece =
-                                   this.board.positions[targetPosition];
+                                   positions[targetPosition];
                               // empty cell
                               if (targetPositionPiece === 0) {
                                    movesArr.push(
@@ -112,12 +116,10 @@ export class Game implements IGame {
                                    );
                               } else if (
                                    // if the cell next to goat is empty tiger can jump over the goat
-                                   this.currentTurn === PIECE_ROLE.TIGER &&
+                                   currentTurn === PIECE_ROLE.TIGER &&
                                    numCells[startPosition][i] > 1 &&
                                    targetPositionPiece === PIECE_ROLE.GOAT &&
-                                   this.board.positions[
-                                        targetPosition + OFFSETS[i]
-                                   ] === 0
+                                   positions[targetPosition + OFFSETS[i]] === 0
                               ) {
                                    movesArr.push(
                                         new Move({
@@ -222,7 +224,10 @@ export class Game implements IGame {
           console.log(this.board.positions);
 
           this.changeTurn();
-          this.movesArr = this.generateMoves();
+          this.movesArr = this.generateMoves(
+               this.board.positions,
+               this.currentTurn
+          );
           this.updateNumTigersTrapped();
           this.board.updateBoard();
           this.updateDOM();
@@ -235,49 +240,66 @@ export class Game implements IGame {
 
      // move ai piece
      makeMove() {
-          const max = this.movesArr.length;
-          const min = 0;
-          const randomIndex = getRandomInt(min, max);
+          // const max = this.movesArr.length;
+          // const min = 0;
+          // const randomIndex = getRandomInt(min, max);
           // const bestMove = from minmax
-          const computerMove = this.movesArr[randomIndex];
-          this.updatePosition(computerMove);
+          // const computerMove = this.movesArr[randomIndex];
+          const computerMove = this.findBestMove();
+          this.board.positions = this.updatePosition(
+               computerMove,
+               this.board.positions,
+               this.currentTurn
+          );
           this.updateState();
      }
 
-     updatePosition({ startPosition, targetPosition, capturedGoat }: Move) {
+     updatePosition(
+          { startPosition, targetPosition, capturedGoat }: Move,
+          positions: number[],
+          currentTurn: number
+     ): number[] {
+          const tempPositions = [...positions];
           if (startPosition >= 0) {
-               this.board.emptyCell(startPosition);
+               tempPositions[startPosition] = 0;
           }
-          if (this.currentTurn === PIECE_ROLE.GOAT) {
-               this.board.addGoat(targetPosition);
+          if (currentTurn === PIECE_ROLE.GOAT) {
+               tempPositions[targetPosition] = PIECE_ROLE.GOAT;
                this.goatsPlaced = Math.min(20, this.goatsPlaced + 1);
           } else {
                if (capturedGoat) {
-                    this.board.emptyCell(capturedGoat);
+                    tempPositions[capturedGoat] = EMPTY;
                     this.goatsKilled++;
                }
-               this.board.addTiger(targetPosition);
+               tempPositions[targetPosition] = PIECE_ROLE.TIGER;
           }
+          return tempPositions;
      }
 
      // unmake recently made move
-     restorePosition({ startPosition, targetPosition, capturedGoat }: Move) {
-          this.changeTurn();
+     restorePosition(
+          { startPosition, targetPosition, capturedGoat }: Move,
+          positions: number[],
+          currentTurn: number
+     ): number[] {
+          // this.changeTurn();
+          const tempPositions = [...positions];
           if (startPosition >= 0) {
-               if (this.currentTurn === PIECE_ROLE.GOAT) {
-                    this.board.addGoat(startPosition);
+               if (currentTurn === PIECE_ROLE.GOAT) {
+                    tempPositions[startPosition] = PIECE_ROLE.GOAT;
                } else {
-                    this.board.addTiger(startPosition);
+                    tempPositions[startPosition] = PIECE_ROLE.TIGER;
                     if (capturedGoat) {
-                         this.board.addGoat(capturedGoat);
+                         tempPositions[capturedGoat] = PIECE_ROLE.GOAT;
                          this.goatsKilled--;
                     }
                }
-               this.board.emptyCell(targetPosition);
+               tempPositions[targetPosition] = EMPTY;
           } else {
-               this.board.emptyCell(targetPosition);
+               tempPositions[targetPosition] = EMPTY;
                this.goatsPlaced--;
           }
+          return tempPositions;
      }
 
      evaluate(): number {
@@ -293,22 +315,74 @@ export class Game implements IGame {
           }
      }
 
-     minimax(depth: number): number {
+     findBestMove(): Move {
+          let currPositions = [...this.board.positions];
+          let currMovesArr = this.generateMoves(
+               currPositions,
+               this.currentTurn
+          );
+          let bestEvaluation = -Infinity;
+          let bestMove: Move = {
+               startPosition: -1,
+               targetPosition: -1,
+               capturedGoat: -1,
+          };
+
+          for (let i = 0; i < currMovesArr.length; i++) {
+               currPositions = this.updatePosition(
+                    currMovesArr[i],
+                    currPositions,
+                    this.currentTurn
+               );
+               this.changeTurn();
+
+               let evaluation = -this.minimax(currPositions, maxDepth);
+               if (evaluation > bestEvaluation) {
+                    bestEvaluation = evaluation;
+                    bestMove = currMovesArr[i];
+               }
+
+               this.changeTurn();
+               currPositions = this.restorePosition(
+                    currMovesArr[i],
+                    currPositions,
+                    this.currentTurn
+               );
+          }
+          console.log(bestEvaluation);
+          return bestMove;
+     }
+
+     minimax(positions: number[], depth: number) {
           if (depth === 0) {
                return this.evaluate();
           }
-          let movesArr = this.generateMoves();
-          if (movesArr.length === 0 || this.goatsKilled >= 5) {
+          let currPositions = [...positions];
+          let currMovesArr = this.generateMoves(
+               currPositions,
+               this.currentTurn
+          );
+          if (currMovesArr.length === 0) {
                return -Infinity;
           }
           let bestEvaluation = -Infinity;
-          for (let i = 0; i < movesArr.length; i++) {
-               this.updatePosition(movesArr[i]);
+          for (let i = 0; i < currMovesArr.length; i++) {
+               currPositions = this.updatePosition(
+                    currMovesArr[i],
+                    currPositions,
+                    this.currentTurn
+               );
                this.changeTurn();
-               let evaluation = -this.minimax(depth - 1);
-               this.restorePosition(movesArr[i]);
-               evaluation = evaluation * -1;
+
+               let evaluation = -this.minimax(currPositions, depth - 1);
                bestEvaluation = Math.max(evaluation, bestEvaluation);
+
+               this.changeTurn();
+               currPositions = this.restorePosition(
+                    currMovesArr[i],
+                    currPositions,
+                    this.currentTurn
+               );
           }
           return bestEvaluation;
      }
