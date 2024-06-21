@@ -1,4 +1,4 @@
-import { EMPTY, PIECE_ROLE } from "../constants";
+import { DIMENSIONS, EMPTY, PIECE_ROLE } from "../constants";
 import { Board } from "./Board";
 import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
@@ -29,7 +29,9 @@ showBestMoveInput.addEventListener("change", () => {
      }
 });
 
-let maxDepth = 3;
+let maxDepth = 5; // max depth is 6 for reasonable computation time
+// let alpha = -Infinity;
+// let beta = Infinity;
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -57,6 +59,7 @@ export class Game implements IGame {
      player1: Player;
      player2: Player;
      vsComputer: boolean;
+     evaluation: number;
 
      constructor({ player1, player2, vsComputer = false }: GameProps) {
           this.player1 = player1;
@@ -80,6 +83,7 @@ export class Game implements IGame {
                this.board.positions,
                this.currentTurn
           );
+          this.evaluation = 0;
      }
 
      generateMoves(positions: number[], currentTurn: PIECE_ROLE) {
@@ -243,34 +247,42 @@ export class Game implements IGame {
           );
           this.updateDOM();
           this.checkWinCondition();
-          this.evaluate();
+          const bestMove = this.findBestMove();
+          this.updateEvalBar();
           if (this.vsComputer && this.currentTurn === this.player2.piece) {
-               this.makeMove();
-          }
-          if (
+               this.makeMove(bestMove);
+          } else if (
                this.vsComputer &&
                this.currentTurn === this.player1.piece &&
                showBestMove
           ) {
-               const bestMove = this.findBestMove();
                console.log(bestMove);
                this.board.highlightBestMove(bestMove);
           }
      }
 
+     updateEvalBar() {
+          const evalBar = document.querySelector(".eval-bar") as HTMLDivElement;
+          const evalBarHeight =
+               DIMENSIONS.EVAL_HEIGHT -
+               this.evaluation * DIMENSIONS.EVAL_HEIGHT;
+          evalBar.style.height = `${evalBarHeight}px`;
+     }
+
      // move ai piece
-     makeMove() {
+     makeMove(computerMove: Move) {
           // const max = this.movesArr.length;
           // const min = 0;
-          // const randomIndex = getRandomInt(min, max);
           // const bestMove = from minmax
+          // const randomIndex = getRandomInt(min, max);
           // const computerMove = this.movesArr[randomIndex];
-          const computerMove = this.findBestMove();
+          // const computerMove = this.findBestMove();
           this.board.positions = this.updatePosition(
                computerMove,
                this.board.positions,
                this.currentTurn
           );
+          console.log("make move");
           this.updateState();
      }
 
@@ -341,14 +353,16 @@ export class Game implements IGame {
                currPositions,
                this.currentTurn
           );
-          let bestEvaluation = -Infinity;
+
           let bestMove: Move = {
                startPosition: -1,
                targetPosition: -1,
-               capturedGoat: -1,
+               capturedGoat: null,
           };
+          let bestEvaluation = -Infinity;
 
           for (let i = 0; i < currMovesArr.length; i++) {
+               // makes move
                currPositions = this.updatePosition(
                     currMovesArr[i],
                     currPositions,
@@ -356,37 +370,51 @@ export class Game implements IGame {
                );
                this.changeTurn();
 
-               let evaluation = -this.minimax(currPositions, maxDepth);
-               if (evaluation > bestEvaluation) {
-                    bestEvaluation = evaluation;
-                    bestMove = currMovesArr[i];
-               }
+               let evaluation = -this.minimax(
+                    currPositions,
+                    maxDepth,
+                    -Infinity,
+                    Infinity
+               );
 
+               // unmakes move
                this.changeTurn();
                currPositions = this.restorePosition(
                     currMovesArr[i],
                     currPositions,
                     this.currentTurn
                );
+
+               if (evaluation > bestEvaluation) {
+                    bestEvaluation = evaluation;
+                    bestMove = currMovesArr[i];
+               }
           }
-          console.log(bestEvaluation);
+          if (this.currentTurn === PIECE_ROLE.GOAT) {
+               this.evaluation = bestEvaluation;
+          } else {
+               this.evaluation = bestEvaluation * -1;
+          }
           return bestMove;
      }
 
-     minimax(positions: number[], depth: number) {
+     minimax(positions: number[], depth: number, alpha: number, beta: number) {
           if (depth === 0) {
                return this.evaluate();
           }
+
           let currPositions = [...positions];
           let currMovesArr = this.generateMoves(
                currPositions,
                this.currentTurn
           );
+
           if (currMovesArr.length === 0) {
                return -Infinity;
           }
-          let bestEvaluation = -Infinity;
+
           for (let i = 0; i < currMovesArr.length; i++) {
+               // makes move
                currPositions = this.updatePosition(
                     currMovesArr[i],
                     currPositions,
@@ -394,16 +422,28 @@ export class Game implements IGame {
                );
                this.changeTurn();
 
-               let evaluation = -this.minimax(currPositions, depth - 1);
-               bestEvaluation = Math.max(evaluation, bestEvaluation);
+               let evaluation = -this.minimax(
+                    currPositions,
+                    depth - 1,
+                    -beta,
+                    -alpha
+               );
 
+               // unmakes move
                this.changeTurn();
                currPositions = this.restorePosition(
                     currMovesArr[i],
                     currPositions,
                     this.currentTurn
                );
+
+               if (evaluation >= beta) {
+                    // prune this branch
+                    return beta;
+               }
+
+               alpha = Math.max(alpha, evaluation);
           }
-          return bestEvaluation;
+          return alpha;
      }
 }

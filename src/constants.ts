@@ -22,3 +22,8 @@ export const PLAYER_ROLE = {
      GOAT: "Goat",
      TIGER: "Tiger",
 };
+
+export const DIMENSIONS = {
+     EVAL_WIDTH: 30,
+     EVAL_HEIGHT: 200,
+};

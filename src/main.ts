@@ -104,7 +104,7 @@ startBtn.addEventListener("click", () => {
 function startGame() {
      gameSettings.style.display = "none";
      startBtn.style.display = "none";
-     gameElement.style.display = "block";
+     gameElement.style.display = "flex";
      if (gameModeInput.value === GAME_MODE.VS_COMPUTER) {
           const humanRole =
                role.value === PLAYER_ROLE.GOAT
@@ -127,8 +127,9 @@ function startGame() {
           game = new Game({ player1, player2, vsComputer: true });
           game.board.drawBoard();
           game.board.updateBoard();
+          const bestMove = game.findBestMove();
           if (player2.piece === PIECE_ROLE.GOAT) {
-               game.makeMove();
+               game.makeMove(bestMove);
           }
      } else {
           player1 = new Player({

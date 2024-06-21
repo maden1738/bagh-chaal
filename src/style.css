@@ -1,4 +1,6 @@
 :root {
+     --board-height: 400px;
+     --eval-bar-width: 30px;
      font-family: Helvetica, sans-serif;
      line-height: 1.5;
      font-weight: 400;
@@ -21,8 +23,8 @@ body {
 .board {
      background: url("/board.png") no-repeat;
      background-size: cover;
-     width: 400px;
-     height: 400px;
+     width: var(--board-height);
+     height: var(--board-height);
      display: grid;
      grid-template-rows: repeat(5, 80px);
      grid-template-columns: repeat(5, 80px);
@@ -54,7 +56,12 @@ body {
 }
 
 .game-info {
-     margin-right: 30px;
+     width: fit-content;
+}
+
+.game-info,
+.best-moves {
+     margin-left: 107px;
 }
 
 label {
@@ -67,6 +74,8 @@ label {
 
 .game {
      display: none;
+     flex-direction: column;
+     align-items: center;
 }
 
 .hidden {
@@ -79,4 +88,27 @@ button {
 
 .best-moves {
      display: none;
+}
+
+.board-wrapper {
+     display: flex;
+     gap: 4rem;
+     align-items: center;
+}
+
+.eval-bar-container {
+     width: var(--eval-bar-width);
+     height: 400px;
+     background-color: white;
+     position: relative;
+     margin-bottom: 18px;
+}
+
+.eval-bar {
+     position: absolute;
+     top: 0;
+     height: calc(var(--board-height) / 2);
+     width: 100%;
+     background-color: black;
+     transition: height 0.5s ease-in;
 }
