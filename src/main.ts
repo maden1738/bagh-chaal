@@ -102,7 +102,9 @@ startBtn.addEventListener("click", () => {
 });
 
 function startGame() {
-     console.log(gameModeInput.value);
+     gameSettings.style.display = "none";
+     startBtn.style.display = "none";
+     gameElement.style.display = "block";
      if (gameModeInput.value === GAME_MODE.VS_COMPUTER) {
           const humanRole =
                role.value === PLAYER_ROLE.GOAT
@@ -145,7 +147,4 @@ function startGame() {
      showBestMoveElements.forEach((el) => {
           el.style.display = "block";
      });
-     gameSettings.style.display = "none";
-     startBtn.style.display = "none";
-     gameElement.style.display = "block";
 }

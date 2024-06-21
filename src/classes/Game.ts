@@ -29,7 +29,7 @@ showBestMoveInput.addEventListener("change", () => {
      }
 });
 
-let maxDepth = 5;
+let maxDepth = 3;
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -234,13 +234,13 @@ export class Game implements IGame {
 
      updateState() {
           // storing old position in a string
+          this.board.updateBoard();
+          this.updateNumTigersTrapped();
           this.changeTurn();
           this.movesArr = this.generateMoves(
                this.board.positions,
                this.currentTurn
           );
-          this.updateNumTigersTrapped();
-          this.board.updateBoard();
           this.updateDOM();
           this.checkWinCondition();
           this.evaluate();
