@@ -16,8 +16,20 @@ const goatsKilled = document.getElementById("goats-killed") as HTMLSpanElement;
 const tigersTrapped = document.getElementById(
      "tigers-trapped"
 ) as HTMLSpanElement;
+const showBestMoveInput = document.getElementById(
+     "best-moves"
+) as HTMLInputElement;
 
-let maxDepth = 2;
+let showBestMove = false;
+showBestMoveInput.addEventListener("change", () => {
+     if (showBestMoveInput.checked) {
+          showBestMove = true;
+     } else {
+          showBestMove = false;
+     }
+});
+
+let maxDepth = 5;
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -221,8 +233,7 @@ export class Game implements IGame {
      }
 
      updateState() {
-          console.log(this.board.positions);
-
+          // storing old position in a string
           this.changeTurn();
           this.movesArr = this.generateMoves(
                this.board.positions,
@@ -235,6 +246,15 @@ export class Game implements IGame {
           this.evaluate();
           if (this.vsComputer && this.currentTurn === this.player2.piece) {
                this.makeMove();
+          }
+          if (
+               this.vsComputer &&
+               this.currentTurn === this.player1.piece &&
+               showBestMove
+          ) {
+               const bestMove = this.findBestMove();
+               console.log(bestMove);
+               this.board.highlightBestMove(bestMove);
           }
      }
 

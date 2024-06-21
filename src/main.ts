@@ -3,7 +3,7 @@ import { Game } from "./classes/Game";
 import { GAME_MODE, PIECE_ROLE, PLAYER_ROLE } from "./constants";
 import { Player } from "./classes/Player";
 
-type ClickedPiece = {
+export type ClickedPiece = {
      piece: PIECE_ROLE | null;
      position: number | null;
 };
@@ -39,6 +39,7 @@ export function handleBoardClick(event: MouseEvent) {
                piece: game.board.positions[targetPosition],
                position: targetPosition,
           };
+          // game.board.highlightPossibleMoves(clickedPiece, game.movesArr);
      }
      // a piece was clicked on last move and an empty cell is clicked now
      else if (
@@ -88,6 +89,9 @@ const role = document.getElementById("role") as HTMLSelectElement;
 const startBtn = document.querySelector(".start-btn") as HTMLButtonElement;
 const gameElement = document.querySelector(".game") as HTMLDivElement;
 const roleWrapper = document.querySelector(".role-wrapper") as HTMLDivElement;
+const showBestMoveElements = document.querySelectorAll(
+     ".best-moves"
+) as NodeListOf<HTMLElement>;
 
 gameModeInput.addEventListener("change", () => {
      roleWrapper.classList.toggle("hidden");
@@ -138,6 +142,9 @@ function startGame() {
           game.board.drawBoard();
           game.board.updateBoard();
      }
+     showBestMoveElements.forEach((el) => {
+          el.style.display = "block";
+     });
      gameSettings.style.display = "none";
      startBtn.style.display = "none";
      gameElement.style.display = "block";

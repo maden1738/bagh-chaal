@@ -28,6 +28,7 @@ body {
      grid-template-columns: repeat(5, 80px);
      column-gap: 19px;
      row-gap: 18px;
+     margin-bottom: 2rem;
 }
 
 .cell {
@@ -74,4 +75,8 @@ label {
 
 button {
      cursor: pointer;
+}
+
+.best-moves {
+     display: none;
 }

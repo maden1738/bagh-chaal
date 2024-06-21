@@ -3,6 +3,7 @@ import tigerIcon from "../assets/tiger.png";
 import goatIcon from "../assets/goat.png";
 import { EMPTY, PIECE_ROLE } from "../constants";
 import { handleBoardClick } from "../main";
+import { Move } from "./Move";
 
 interface IBoard {
      positions: number[];
@@ -39,12 +40,13 @@ export class Board implements IBoard {
                boardElement.appendChild(cell);
           }
      }
-
      updateBoard() {
-          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
           // displayin correct image for each cell
+          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+
           for (let i = 0; i < this.positions.length; i++) {
                let cell = cells[i];
+               cell.style.backgroundColor = "transparent";
                if (this.positions[i] === PIECE_ROLE.TIGER) {
                     cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
                } else if (this.positions[i] === PIECE_ROLE.GOAT) {
@@ -53,5 +55,33 @@ export class Board implements IBoard {
                     cell.innerHTML = "";
                }
           }
+          console.log(this.positions);
      }
+
+     highlightBestMove(bestMove: Move) {
+          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+          for (let i = 0; i < this.positions.length; i++) {
+               const cell = cells[i];
+               if (i === bestMove.startPosition) {
+                    cell.style.backgroundColor = "#ccd5ae";
+               } else if (i === bestMove.targetPosition) {
+                    cell.style.backgroundColor = "#80ffdb";
+               } else if (i === bestMove.capturedGoat) {
+                    cell.style.backgroundColor = "#ffafcc";
+               }
+          }
+     }
+
+     // highlightPossibleMoves(clickedPiece: ClickedPiece, possibleMoves: Move[]) {
+     //      const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+     //      for (let i = 0; i < possibleMoves.length; i++) {
+     //           let possibleMove = possibleMoves[i];
+     //           if (possibleMove.startPosition === clickedPiece.position) {
+     //                let possibleCell = cells[possibleMove.targetPosition];
+     //                possibleCell.style.backgroundColor = "#dbc251";
+     //           }
+     //      }
+     // }
+
+     // // removeHighlightedPossibleMoves(){}
 }
