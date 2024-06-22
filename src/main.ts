@@ -13,66 +13,6 @@ let clickedPiece: ClickedPiece = {
      position: null,
 };
 
-export function handleBoardClick(event: MouseEvent) {
-     if (game.isCalculating) {
-          return;
-     }
-     const targetPosition = parseInt(
-          (event.currentTarget as HTMLDivElement).dataset.id || "0"
-     );
-
-     if (game.vsComputer && game.currentTurn !== player1.piece) {
-          return;
-     }
-
-     // clicking on empty cell and no piece clicked on last move
-     if (game.board.positions[targetPosition] === 0 && !clickedPiece.piece) {
-          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
-               game.board.addGoat(targetPosition);
-               game.goatsPlaced++;
-               game.updateState();
-          }
-     }
-     // clicking a piece
-     else if (game.board.positions[targetPosition] === game.currentTurn) {
-          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
-               return;
-          }
-          clickedPiece = {
-               piece: game.board.positions[targetPosition],
-               position: targetPosition,
-          };
-          // game.board.highlightPossibleMoves(clickedPiece, game.movesArr);
-     }
-     // a piece was clicked on last move and an empty cell is clicked now
-     else if (
-          clickedPiece.piece === game.currentTurn &&
-          clickedPiece.position != null &&
-          game.board.positions[targetPosition] === 0
-     ) {
-          // cannot move goat before all 20 goats have been placed
-          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
-               return;
-          }
-          let startPosition = clickedPiece.position;
-          const foundMove = game.movesArr.find(
-               (move) =>
-                    move.startPosition === startPosition &&
-                    move.targetPosition === targetPosition
-          );
-          if (foundMove) {
-               game.board.positions[startPosition] = 0;
-               game.board.positions[targetPosition] = clickedPiece.piece;
-               if (foundMove.capturedGoat) {
-                    game.board.positions[foundMove.capturedGoat] = 0;
-                    game.goatsKilled++;
-               }
-               clickedPiece = { piece: null, position: null };
-               game.updateState();
-          }
-     }
-}
-
 let player1 = new Player({
      name: "player1",
      piece: PIECE_ROLE.TIGER,
@@ -92,9 +32,13 @@ const role = document.getElementById("role") as HTMLSelectElement;
 const startBtn = document.querySelector(".start-btn") as HTMLButtonElement;
 const gameElement = document.querySelector(".game") as HTMLDivElement;
 const roleWrapper = document.querySelector(".role-wrapper") as HTMLDivElement;
-const showBestMoveElements = document.querySelectorAll(
+const winnerElement = document.querySelector(".winner") as HTMLDivElement;
+const showBestMoveElement = document.querySelector(
      ".best-moves"
-) as NodeListOf<HTMLElement>;
+) as HTMLDivElement;
+const cellsElements = document.querySelectorAll(
+     ".cell"
+) as NodeListOf<HTMLDivElement>;
 
 gameModeInput.addEventListener("change", () => {
      roleWrapper.classList.toggle("hidden");
@@ -150,7 +94,74 @@ function startGame() {
           game.board.drawBoard();
           game.board.updateBoard();
      }
-     showBestMoveElements.forEach((el) => {
-          el.style.display = "block";
+     showBestMoveElement.style.display = "flex";
+}
+
+export function displayWinner(winnerPiece: number, winCondition: string) {
+     winnerElement.innerHTML = `${
+          winnerPiece === PIECE_ROLE.GOAT ? "Goat" : "Tiger"
+     } won by ${winCondition}`;
+
+     cellsElements.forEach((cell) => {
+          cell.removeEventListener("click", handleBoardClick);
      });
+}
+
+export function handleBoardClick(event: MouseEvent) {
+     if (game.isCalculating) {
+          return;
+     }
+     if (game.vsComputer && game.currentTurn !== player1.piece) {
+          return;
+     }
+     const targetPosition = parseInt(
+          (event.currentTarget as HTMLDivElement).dataset.id || "0"
+     );
+
+     // clicking on empty cell and no piece clicked on last move
+     if (game.board.positions[targetPosition] === 0 && !clickedPiece.piece) {
+          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               game.board.addGoat(targetPosition);
+               game.goatsPlaced++;
+               game.updateState();
+          }
+     }
+     // clicking a piece
+     else if (game.board.positions[targetPosition] === game.currentTurn) {
+          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               return;
+          }
+          clickedPiece = {
+               piece: game.board.positions[targetPosition],
+               position: targetPosition,
+          };
+          // game.board.highlightPossibleMoves(clickedPiece, game.movesArr);
+     }
+     // a piece was clicked on last move and an empty cell is clicked now
+     else if (
+          clickedPiece.piece === game.currentTurn &&
+          clickedPiece.position != null &&
+          game.board.positions[targetPosition] === 0
+     ) {
+          // cannot move goat before all 20 goats have been placed
+          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               return;
+          }
+          let startPosition = clickedPiece.position;
+          const foundMove = game.movesArr.find(
+               (move) =>
+                    move.startPosition === startPosition &&
+                    move.targetPosition === targetPosition
+          );
+          if (foundMove) {
+               game.board.positions[startPosition] = 0;
+               game.board.positions[targetPosition] = clickedPiece.piece;
+               if (foundMove.capturedGoat) {
+                    game.board.positions[foundMove.capturedGoat] = 0;
+                    game.goatsKilled++;
+               }
+               clickedPiece = { piece: null, position: null };
+               game.updateState();
+          }
+     }
 }

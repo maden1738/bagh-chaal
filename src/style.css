@@ -105,10 +105,16 @@ button {
 }
 
 .eval-bar {
+     max-height: 400px;
      position: absolute;
      top: 0;
      height: calc(var(--board-height) / 2);
      width: 100%;
      background-color: black;
      transition: height 0.5s ease-in;
+}
+
+.winner {
+     margin-left: 107px;
+     text-align: center;
 }

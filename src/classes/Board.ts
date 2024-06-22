@@ -58,7 +58,6 @@ export class Board implements IBoard {
                     cell.innerHTML = "";
                }
           }
-          console.log(this.positions);
      }
 
      highlightBestMove(bestMove: Move) {

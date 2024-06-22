@@ -4,6 +4,7 @@ import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
 import { Move } from "./Move";
 import { Player } from "./Player";
+import { displayWinner } from "../main";
 
 const numCells = calcNumOfCells();
 const currentTurnSpan = document.getElementById(
@@ -30,8 +31,6 @@ showBestMoveInput.addEventListener("change", () => {
 });
 
 let maxDepth = 5; // max depth is 5 for reasonable computation time
-// let alpha = -Infinity;
-// let beta = Infinity;
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -89,7 +88,7 @@ export class Game implements IGame {
      }
 
      generateMoves(positions: number[], currentTurn: PIECE_ROLE) {
-          // calulates possible moves for all pieces
+          // calulates all possible moves in a position
           let movesArr: Move[] = [];
           for (
                let startPosition = 0;
@@ -222,12 +221,12 @@ export class Game implements IGame {
      checkWinCondition() {
           if (this.movesArr.length === 0) {
                if (this.currentTurn == PIECE_ROLE.TIGER) {
-                    console.warn("goat won");
+                    displayWinner(PIECE_ROLE.GOAT, "blocking all tiger moves");
                } else {
-                    console.warn("tiger won");
+                    displayWinner(PIECE_ROLE.TIGER, "blocking all goat moves");
                }
           } else if (this.goatsKilled >= 5) {
-               console.warn("tiger won");
+               displayWinner(PIECE_ROLE.TIGER, "capturing 5 goats");
           }
      }
 
@@ -254,11 +253,7 @@ export class Game implements IGame {
                this.updateEvalBar();
                if (this.vsComputer && this.currentTurn === this.player2.piece) {
                     this.makeMove(bestMove);
-               } else if (
-                    this.vsComputer &&
-                    this.currentTurn === this.player1.piece &&
-                    showBestMove
-               ) {
+               } else if (showBestMove) {
                     this.board.highlightBestMove(bestMove);
                }
                this.isCalculating = false;
@@ -387,6 +382,8 @@ export class Game implements IGame {
                     bestMove = currMovesArr[i];
                }
           }
+
+          // future eval if both team plays the best move
           if (this.currentTurn === PIECE_ROLE.GOAT) {
                this.evaluation = bestEvaluation;
           } else {
