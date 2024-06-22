@@ -29,7 +29,7 @@ showBestMoveInput.addEventListener("change", () => {
      }
 });
 
-let maxDepth = 5; // max depth is 6 for reasonable computation time
+let maxDepth = 5; // max depth is 5 for reasonable computation time
 // let alpha = -Infinity;
 // let beta = Infinity;
 
@@ -59,6 +59,7 @@ export class Game implements IGame {
      player1: Player;
      player2: Player;
      vsComputer: boolean;
+     isCalculating: boolean;
      evaluation: number;
 
      constructor({ player1, player2, vsComputer = false }: GameProps) {
@@ -84,6 +85,7 @@ export class Game implements IGame {
                this.currentTurn
           );
           this.evaluation = 0;
+          this.isCalculating = false;
      }
 
      generateMoves(positions: number[], currentTurn: PIECE_ROLE) {
@@ -237,7 +239,7 @@ export class Game implements IGame {
      }
 
      updateState() {
-          // storing old position in a string
+          this.isCalculating = true;
           this.board.updateBoard();
           this.updateNumTigersTrapped();
           this.changeTurn();
@@ -247,18 +249,20 @@ export class Game implements IGame {
           );
           this.updateDOM();
           this.checkWinCondition();
-          const bestMove = this.findBestMove();
-          this.updateEvalBar();
-          if (this.vsComputer && this.currentTurn === this.player2.piece) {
-               this.makeMove(bestMove);
-          } else if (
-               this.vsComputer &&
-               this.currentTurn === this.player1.piece &&
-               showBestMove
-          ) {
-               console.log(bestMove);
-               this.board.highlightBestMove(bestMove);
-          }
+          setTimeout(() => {
+               const bestMove = this.findBestMove();
+               this.updateEvalBar();
+               if (this.vsComputer && this.currentTurn === this.player2.piece) {
+                    this.makeMove(bestMove);
+               } else if (
+                    this.vsComputer &&
+                    this.currentTurn === this.player1.piece &&
+                    showBestMove
+               ) {
+                    this.board.highlightBestMove(bestMove);
+               }
+               this.isCalculating = false;
+          }, 0);
      }
 
      updateEvalBar() {
@@ -271,18 +275,11 @@ export class Game implements IGame {
 
      // move ai piece
      makeMove(computerMove: Move) {
-          // const max = this.movesArr.length;
-          // const min = 0;
-          // const bestMove = from minmax
-          // const randomIndex = getRandomInt(min, max);
-          // const computerMove = this.movesArr[randomIndex];
-          // const computerMove = this.findBestMove();
           this.board.positions = this.updatePosition(
                computerMove,
                this.board.positions,
                this.currentTurn
           );
-          console.log("make move");
           this.updateState();
      }
 

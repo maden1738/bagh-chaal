@@ -27,7 +27,6 @@ export class Board implements IBoard {
 
      addGoat(position: number) {
           this.positions[position] = PIECE_ROLE.GOAT;
-          console.log("addGoat", this.positions);
      }
 
      /**
@@ -45,8 +44,6 @@ export class Board implements IBoard {
           }
      }
      updateBoard() {
-          console.log("update board start");
-
           // displayin correct image for each cell
           const cells = document.querySelectorAll<HTMLDivElement>(".cell");
 
@@ -57,8 +54,6 @@ export class Board implements IBoard {
                     cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
                } else if (this.positions[i] === PIECE_ROLE.GOAT) {
                     cell.innerHTML = `<img src=${goatIcon} alt='Goat'>`;
-                    // console.log(cell);
-                    // debugger;
                } else {
                     cell.innerHTML = "";
                }

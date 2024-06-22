@@ -14,6 +14,9 @@ let clickedPiece: ClickedPiece = {
 };
 
 export function handleBoardClick(event: MouseEvent) {
+     if (game.isCalculating) {
+          return;
+     }
      const targetPosition = parseInt(
           (event.currentTarget as HTMLDivElement).dataset.id || "0"
      );
@@ -127,10 +130,12 @@ function startGame() {
           game = new Game({ player1, player2, vsComputer: true });
           game.board.drawBoard();
           game.board.updateBoard();
-          const bestMove = game.findBestMove();
-          if (player2.piece === PIECE_ROLE.GOAT) {
-               game.makeMove(bestMove);
-          }
+          setTimeout(() => {
+               const bestMove = game.findBestMove();
+               if (player2.piece === PIECE_ROLE.GOAT) {
+                    game.makeMove(bestMove);
+               }
+          }, 0);
      } else {
           player1 = new Player({
                name: "player1",
