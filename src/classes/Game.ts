@@ -46,6 +46,12 @@ type GameProps = {
      vsComputer: boolean;
 };
 
+export type State = {
+     positions: number[];
+     goatsPlaced: number;
+     goatsKilled: number;
+};
+
 export class Game implements IGame {
      currentTurn: PIECE_ROLE;
      goatsPlaced: number;
@@ -60,6 +66,7 @@ export class Game implements IGame {
      vsComputer: boolean;
      isCalculating: boolean;
      evaluation: number;
+     stateArr: State[];
 
      constructor({ player1, player2, vsComputer = false }: GameProps) {
           this.player1 = player1;
@@ -85,6 +92,7 @@ export class Game implements IGame {
           );
           this.evaluation = 0;
           this.isCalculating = false;
+          this.stateArr = [];
      }
 
      generateMoves(positions: number[], currentTurn: PIECE_ROLE) {
@@ -156,53 +164,59 @@ export class Game implements IGame {
 
      updateNumTigersTrapped() {
           let tempMovesArr = [];
+          // when its tiger's turn we can find the numbers of tigers trapped by simply looking at possible moves
           if (this.currentTurn === PIECE_ROLE.TIGER) {
                tempMovesArr = [...this.movesArr];
           } else {
                // generating moves for tiger even though its goat turn to check trapped goat
-               for (
-                    let startPosition = 0;
-                    startPosition < this.board.positions.length;
-                    startPosition++
-               ) {
-                    let currentPiece = this.board.positions[startPosition];
-                    if (currentPiece === PIECE_ROLE.TIGER) {
-                         for (let i = 0; i < OFFSETS.length; i++) {
-                              if (numCells[startPosition][i] > 0) {
-                                   let targetPosition =
-                                        startPosition + OFFSETS[i];
-                                   let targetPositionPiece =
-                                        this.board.positions[targetPosition];
-                                   // empty cell
-                                   if (targetPositionPiece === 0) {
-                                        tempMovesArr.push(
-                                             new Move({
-                                                  startPosition,
-                                                  targetPosition,
-                                             })
-                                        );
-                                   } else if (
-                                        // if the cell next to goat is empty tiger can jump over the goat
-                                        numCells[startPosition][i] > 1 &&
-                                        targetPositionPiece ===
-                                             PIECE_ROLE.GOAT &&
-                                        this.board.positions[
-                                             targetPosition + OFFSETS[i]
-                                        ] === 0
-                                   ) {
-                                        tempMovesArr.push(
-                                             new Move({
-                                                  startPosition,
-                                                  targetPosition:
-                                                       targetPosition +
-                                                       OFFSETS[i],
-                                             })
-                                        );
-                                   }
-                              }
-                         }
-                    }
-               }
+               tempMovesArr = this.generateMoves(
+                    this.board.positions,
+                    PIECE_ROLE.TIGER
+               );
+
+               // for (
+               //      let startPosition = 0;
+               //      startPosition < this.board.positions.length;
+               //      startPosition++
+               // ) {
+               //      let currentPiece = this.board.positions[startPosition];
+               //      if (currentPiece === PIECE_ROLE.TIGER) {
+               //           for (let i = 0; i < OFFSETS.length; i++) {
+               //                if (numCells[startPosition][i] > 0) {
+               //                     let targetPosition =
+               //                          startPosition + OFFSETS[i];
+               //                     let targetPositionPiece =
+               //                          this.board.positions[targetPosition];
+               //                     // empty cell
+               //                     if (targetPositionPiece === 0) {
+               //                          tempMovesArr.push(
+               //                               new Move({
+               //                                    startPosition,
+               //                                    targetPosition,
+               //                               })
+               //                          );
+               //                     } else if (
+               //                          // if the cell next to goat is empty tiger can jump over the goat
+               //                          numCells[startPosition][i] > 1 &&
+               //                          targetPositionPiece ===
+               //                               PIECE_ROLE.GOAT &&
+               //                          this.board.positions[
+               //                               targetPosition + OFFSETS[i]
+               //                          ] === 0
+               //                     ) {
+               //                          tempMovesArr.push(
+               //                               new Move({
+               //                                    startPosition,
+               //                                    targetPosition:
+               //                                         targetPosition +
+               //                                         OFFSETS[i],
+               //                               })
+               //                          );
+               //                     }
+               //                }
+               //           }
+               //      }
+               // }
           }
           const uniqueTiger = new Set(
                tempMovesArr.map((move) => move.startPosition)
@@ -240,14 +254,18 @@ export class Game implements IGame {
      updateState() {
           this.isCalculating = true;
           this.board.updateBoard();
-          this.updateNumTigersTrapped();
+
           this.changeTurn();
           this.movesArr = this.generateMoves(
                this.board.positions,
                this.currentTurn
           );
+
+          this.updateNumTigersTrapped();
+
           this.updateDOM();
           this.checkWinCondition();
+
           setTimeout(() => {
                const bestMove = this.findBestMove();
                this.updateEvalBar();
@@ -270,6 +288,7 @@ export class Game implements IGame {
 
      // move ai piece
      makeMove(computerMove: Move) {
+          // this.storeCurrentState();
           this.board.positions = this.updatePosition(
                computerMove,
                this.board.positions,
@@ -278,6 +297,7 @@ export class Game implements IGame {
           this.updateState();
      }
 
+     //make move
      updatePosition(
           { startPosition, targetPosition, capturedGoat }: Move,
           positions: number[],
@@ -300,13 +320,12 @@ export class Game implements IGame {
           return tempPositions;
      }
 
-     // unmake recently made move
+     // unmake the provided move
      restorePosition(
           { startPosition, targetPosition, capturedGoat }: Move,
           positions: number[],
           currentTurn: number
      ): number[] {
-          // this.changeTurn();
           const tempPositions = [...positions];
           if (startPosition >= 0) {
                if (currentTurn === PIECE_ROLE.GOAT) {
@@ -337,6 +356,15 @@ export class Game implements IGame {
           } else {
                return evaluation * -1;
           }
+     }
+
+     storeCurrentState() {
+          this.stateArr.push({
+               positions: [...this.board.positions],
+               goatsPlaced: this.goatsPlaced,
+               goatsKilled: this.goatsKilled,
+          });
+          console.log(this.stateArr);
      }
 
      findBestMove(): Move {

@@ -33,6 +33,7 @@ const startBtn = document.querySelector(".start-btn") as HTMLButtonElement;
 const gameElement = document.querySelector(".game") as HTMLDivElement;
 const roleWrapper = document.querySelector(".role-wrapper") as HTMLDivElement;
 const winnerElement = document.querySelector(".winner") as HTMLDivElement;
+const undoBtn = document.querySelector(".undo-btn") as HTMLButtonElement;
 const showBestMoveElement = document.querySelector(
      ".best-moves"
 ) as HTMLDivElement;
@@ -42,6 +43,13 @@ const cellsElements = document.querySelectorAll(
 
 gameModeInput.addEventListener("change", () => {
      roleWrapper.classList.toggle("hidden");
+});
+
+undoBtn.addEventListener("click", () => {
+     if (game.stateArr.length <= 0) {
+          return;
+     }
+     undoMove();
 });
 
 startBtn.addEventListener("click", () => {
@@ -97,6 +105,23 @@ function startGame() {
      showBestMoveElement.style.display = "flex";
 }
 
+function undoMove() {
+     let lastState;
+     lastState = game.stateArr.pop();
+     if (lastState) {
+          game.board.positions = [...lastState.positions];
+          game.goatsKilled = lastState.goatsKilled;
+          game.goatsPlaced = lastState.goatsPlaced;
+     }
+     if (!game.vsComputer) {
+          game.updateState();
+     } else {
+          // jumping back two turns so need to change turn
+          game.changeTurn();
+          game.updateState();
+     }
+}
+
 export function displayWinner(winnerPiece: number, winCondition: string) {
      winnerElement.innerHTML = `${
           winnerPiece === PIECE_ROLE.GOAT ? "Goat" : "Tiger"
@@ -121,6 +146,7 @@ export function handleBoardClick(event: MouseEvent) {
      // clicking on empty cell and no piece clicked on last move
      if (game.board.positions[targetPosition] === 0 && !clickedPiece.piece) {
           if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+               game.storeCurrentState();
                game.board.addGoat(targetPosition);
                game.goatsPlaced++;
                game.updateState();
@@ -154,6 +180,7 @@ export function handleBoardClick(event: MouseEvent) {
                     move.targetPosition === targetPosition
           );
           if (foundMove) {
+               game.storeCurrentState();
                game.board.positions[startPosition] = 0;
                game.board.positions[targetPosition] = clickedPiece.piece;
                if (foundMove.capturedGoat) {
