@@ -165,22 +165,20 @@ export class Game implements IGame {
           return movesArr;
      }
 
-     updateNumTigersTrapped() {
+     updateNumTigersTrapped(movesArr: Move[], positions: number[]) {
           let tempMovesArr = [];
           // when its tiger's turn we can find the numbers of tigers trapped by simply looking at possible moves
           if (this.currentTurn === PIECE_ROLE.TIGER) {
-               tempMovesArr = [...this.movesArr];
+               tempMovesArr = [...movesArr];
           } else {
                // generating moves for tiger even though its goat turn to check trapped goat
-               tempMovesArr = this.generateMoves(
-                    this.board.positions,
-                    PIECE_ROLE.TIGER
-               );
+               tempMovesArr = this.generateMoves(positions, PIECE_ROLE.TIGER);
           }
           const uniqueTiger = new Set(
                tempMovesArr.map((move) => move.startPosition)
           );
-          this.tigersTrapped = 4 - uniqueTiger.size;
+          let tigersTrapped = 4 - uniqueTiger.size;
+          return tigersTrapped;
      }
 
      updateDOM() {
@@ -220,7 +218,10 @@ export class Game implements IGame {
                this.currentTurn
           );
 
-          this.updateNumTigersTrapped();
+          this.tigersTrapped = this.updateNumTigersTrapped(
+               this.movesArr,
+               this.board.positions
+          );
 
           this.updateDOM();
           this.checkWinCondition();
@@ -239,10 +240,15 @@ export class Game implements IGame {
 
      updateEvalBar() {
           const evalBar = document.querySelector(".eval-bar") as HTMLDivElement;
-          evaluationScore.innerHTML = String(this.evaluation);
+          let evaluation = this.evaluation;
+          if (evaluation > 1) {
+               evaluation = 1;
+          } else if (evaluation < -1) {
+               evaluation = -1;
+          }
+          evaluationScore.innerHTML = String(evaluation);
           const evalBarHeight =
-               DIMENSIONS.EVAL_HEIGHT -
-               this.evaluation * DIMENSIONS.EVAL_HEIGHT;
+               DIMENSIONS.EVAL_HEIGHT - evaluation * DIMENSIONS.EVAL_HEIGHT;
           evalBar.style.height = `${evalBarHeight}px`;
      }
 
@@ -305,8 +311,11 @@ export class Game implements IGame {
           return tempPositions;
      }
 
-     evaluate(): number {
-          const tigersTrapped = this.tigersTrapped;
+     evaluate(movesArr: Move[], positions: number[]): number {
+          const tigersTrapped = this.updateNumTigersTrapped(
+               movesArr,
+               positions
+          );
           const goatsKilled = this.goatsKilled;
 
           let evaluation = tigersTrapped * 0.25 - goatsKilled * 0.24;
@@ -339,6 +348,10 @@ export class Game implements IGame {
                capturedGoat: null,
           };
           let bestEvaluation = -Infinity;
+          let depth = maxDepth;
+          if (this.goatsPlaced >= 15) {
+               depth = 8;
+          }
 
           for (let i = 0; i < currMovesArr.length; i++) {
                // makes move
@@ -348,10 +361,11 @@ export class Game implements IGame {
                     this.currentTurn
                );
                this.changeTurn();
+               console.log(depth);
 
                let evaluation = -this.minimax(
                     currPositions,
-                    maxDepth,
+                    depth,
                     -Infinity,
                     Infinity
                );
@@ -380,15 +394,14 @@ export class Game implements IGame {
      }
 
      minimax(positions: number[], depth: number, alpha: number, beta: number) {
-          if (depth === 0) {
-               return this.evaluate();
-          }
-
           let currPositions = [...positions];
           let currMovesArr = this.generateMoves(
                currPositions,
                this.currentTurn
           );
+          if (depth === 0) {
+               return this.evaluate(currMovesArr, currPositions);
+          }
 
           if (currMovesArr.length === 0) {
                return -Infinity;

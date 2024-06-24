@@ -117,6 +117,7 @@ function startGame() {
 }
 
 function undoMove() {
+     winnerElement.innerHTML = "";
      let lastState;
      lastState = game.stateArr.pop();
      if (lastState) {

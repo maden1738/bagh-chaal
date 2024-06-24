@@ -62,11 +62,17 @@ export class Board implements IBoard {
           }
      }
 
+     // highlightGoatPlaceableCell() {
+     //      const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+     //      for (let i = 0; i < this.positions.length; i++) {
+     //           const cell = cells[i];
+     //      }
+     // }
+
      highlightBestMove(bestMove: Move) {
           const cells = document.querySelectorAll<HTMLDivElement>(".cell");
           for (let i = 0; i < this.positions.length; i++) {
                const cell = cells[i];
-
                if (i === bestMove.startPosition) {
                     cell.style.backgroundColor = "#ccd5ae";
                } else if (i === bestMove.targetPosition) {
