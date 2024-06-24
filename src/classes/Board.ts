@@ -4,6 +4,7 @@ import goatIcon from "../assets/goat.png";
 import { EMPTY, PIECE_ROLE } from "../constants";
 import { handleBoardClick } from "../main";
 import { Move } from "./Move";
+import { ClickedPiece } from "../main";
 
 interface IBoard {
      positions: number[];
@@ -49,6 +50,7 @@ export class Board implements IBoard {
 
           for (let i = 0; i < this.positions.length; i++) {
                let cell = cells[i];
+               cell.style.border = "0px";
                cell.style.backgroundColor = "transparent";
                if (this.positions[i] === PIECE_ROLE.TIGER) {
                     cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
@@ -64,26 +66,28 @@ export class Board implements IBoard {
           const cells = document.querySelectorAll<HTMLDivElement>(".cell");
           for (let i = 0; i < this.positions.length; i++) {
                const cell = cells[i];
+
                if (i === bestMove.startPosition) {
                     cell.style.backgroundColor = "#ccd5ae";
                } else if (i === bestMove.targetPosition) {
-                    cell.style.backgroundColor = "#80ffdb";
+                    cell.style.backgroundColor = "#a2d2ff";
                } else if (i === bestMove.capturedGoat) {
                     cell.style.backgroundColor = "#ffafcc";
                }
           }
      }
 
-     // highlightPossibleMoves(clickedPiece: ClickedPiece, possibleMoves: Move[]) {
-     //      const cells = document.querySelectorAll<HTMLDivElement>(".cell");
-     //      for (let i = 0; i < possibleMoves.length; i++) {
-     //           let possibleMove = possibleMoves[i];
-     //           if (possibleMove.startPosition === clickedPiece.position) {
-     //                let possibleCell = cells[possibleMove.targetPosition];
-     //                possibleCell.style.backgroundColor = "#dbc251";
-     //           }
-     //      }
-     // }
-
-     // // removeHighlightedPossibleMoves(){}
+     highlightPossibleMoves(clickedPiece: ClickedPiece, possibleMoves: Move[]) {
+          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+          cells.forEach((cell) => {
+               cell.style.border = "0px";
+          });
+          for (let i = 0; i < possibleMoves.length; i++) {
+               let possibleMove = possibleMoves[i];
+               if (possibleMove.startPosition === clickedPiece.position) {
+                    let possibleCell = cells[possibleMove.targetPosition];
+                    possibleCell.style.border = "1.5px solid #dbc251";
+               }
+          }
+     }
 }

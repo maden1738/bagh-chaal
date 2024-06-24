@@ -1,4 +1,4 @@
-import { DIMENSIONS, EMPTY, PIECE_ROLE } from "../constants";
+import { DIMENSIONS, EMPTY, MAXIMUM, PIECE_ROLE } from "../constants";
 import { Board } from "./Board";
 import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
@@ -349,7 +349,7 @@ export class Game implements IGame {
           const tigersTrapped = this.tigersTrapped;
           const goatsKilled = this.goatsKilled;
 
-          const evaluation = tigersTrapped * 0.25 - goatsKilled * 0.2;
+          const evaluation = tigersTrapped * 0.25 - goatsKilled * 0.24;
 
           if (this.currentTurn === PIECE_ROLE.GOAT) {
                return evaluation;
@@ -364,7 +364,6 @@ export class Game implements IGame {
                goatsPlaced: this.goatsPlaced,
                goatsKilled: this.goatsKilled,
           });
-          console.log(this.stateArr);
      }
 
      findBestMove(): Move {
@@ -431,7 +430,11 @@ export class Game implements IGame {
                this.currentTurn
           );
 
-          if (currMovesArr.length === 0) {
+          if (
+               currMovesArr.length === 0 ||
+               this.goatsKilled === MAXIMUM.GOATS_KILLED ||
+               this.tigersTrapped === MAXIMUM.TIGERS_TRAPPED
+          ) {
                return -Infinity;
           }
 

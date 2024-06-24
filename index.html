@@ -10,6 +10,7 @@
      </head>
      <body>
           <div class="game-settings">
+               <h1>BAGH-CHAAL</h1>
                <div class="game-mode-wrapper">
                     <label for="game-mode">Choose game mode</label>
                     <select name="game-mode" id="game-mode">
@@ -28,7 +29,6 @@
           <button class="start-btn">Start Game</button>
           <div class="game">
                <div class="game-info">
-                    <div>Current Turn: <span id="current-turn">Goat</span></div>
                     <div>Goats Placed: <span id="goats-placed">0</span></div>
                     <div>Goats Killed: <span id="goats-killed">0</span></div>
                     <div>
@@ -40,11 +40,17 @@
                          <div class="eval-bar"></div>
                     </div>
                     <div class="board" id="board"></div>
-                    <button class="undo-btn">Undo</button>
+                    <div>
+                         <div class="best-moves">
+                              <label for="best-moves">Show Best Moves</label>
+                              <input type="checkbox" id="best-moves" />
+                         </div>
+                         <button class="undo-btn">Undo</button>
+                    </div>
                </div>
-               <div class="best-moves">
-                    <label for="best-moves">Show Best Moves</label>
-                    <input type="checkbox" id="best-moves" />
+
+               <div class="game-info">
+                    Current Turn: <span id="current-turn">Goat</span>
                </div>
                <div class="winner"></div>
           </div>

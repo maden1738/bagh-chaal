@@ -11,6 +11,11 @@ export enum PIECE_ROLE {
      GOAT = 2,
 }
 
+export const MAXIMUM = {
+     GOATS_KILLED: 5,
+     TIGERS_TRAPPED: 4,
+};
+
 export const OFFSETS = [-5, 5, 1, -1, -4, 4, -6, 6]; // north south east west north-east south-west north-west south-east
 
 export const GAME_MODE = {

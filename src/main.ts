@@ -161,7 +161,7 @@ export function handleBoardClick(event: MouseEvent) {
                piece: game.board.positions[targetPosition],
                position: targetPosition,
           };
-          // game.board.highlightPossibleMoves(clickedPiece, game.movesArr);
+          game.board.highlightPossibleMoves(clickedPiece, game.movesArr);
      }
      // a piece was clicked on last move and an empty cell is clicked now
      else if (

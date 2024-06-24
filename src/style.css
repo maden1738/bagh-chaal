@@ -20,6 +20,12 @@ body {
      min-height: 100vh;
 }
 
+h1,
+h2,
+h3 {
+     margin: 0px;
+}
+
 .board {
      background: url("/board.png") no-repeat;
      background-size: cover;
@@ -35,7 +41,8 @@ body {
 
 .cell {
      position: relative;
-     transform: translate(-18px, -19px);
+     transform: translate(-19px, -19px);
+     transition: transform 0.5s ease-in;
      height: 40px;
      cursor: pointer;
      color: red;
@@ -57,19 +64,27 @@ body {
 
 .game-info {
      width: fit-content;
+     margin-right: 123px;
+     font-size: 14px;
 }
 
-.game-info,
-.best-moves {
-     margin-left: 107px;
+.game-info span {
+     font-size: 18px;
+     font-weight: 500;
 }
 
 label {
      display: block;
 }
 
+select {
+     padding: 2px 4px;
+     border-radius: 8px;
+     cursor: pointer;
+}
+
 .board {
-     margin-top: 1rem;
+     margin-top: 2rem;
 }
 
 .game {
@@ -84,6 +99,33 @@ label {
 
 button {
      cursor: pointer;
+     font-family: Helvetica, sans-serif;
+}
+
+.start-btn {
+     padding: 0.5rem 1rem;
+     font-weight: 500;
+     background-color: #fafafa;
+     border: none;
+     border-radius: 0.5rem;
+     color: black;
+     transition: transform 0.2s ease-in;
+}
+
+.undo-btn {
+     padding: 3px 6px;
+     border-radius: 6px;
+     border: none;
+     transition: transform 0.2s ease-in;
+     margin-top: 0.5rem;
+}
+
+.undo-btn:hover {
+     transform: scale(1.04);
+}
+
+.start-btn:hover {
+     transform: scale(1.05);
 }
 
 .best-moves {
@@ -117,4 +159,8 @@ button {
 .winner {
      margin-left: 107px;
      text-align: center;
+}
+
+.role-wrapper {
+     margin-top: 0.5rem;
 }
