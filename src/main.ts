@@ -40,6 +40,17 @@ const showBestMoveElement = document.querySelector(
 const cellsElements = document.querySelectorAll(
      ".cell"
 ) as NodeListOf<HTMLDivElement>;
+const showBestMoveInput = document.getElementById(
+     "best-moves"
+) as HTMLInputElement;
+
+showBestMoveInput.addEventListener("change", () => {
+     if (showBestMoveInput.checked) {
+          game.board.highlightBestMove(game.findBestMove());
+     } else {
+          game.board.updateBoard();
+     }
+});
 
 gameModeInput.addEventListener("change", () => {
      roleWrapper.classList.toggle("hidden");
@@ -116,7 +127,7 @@ function undoMove() {
      if (!game.vsComputer) {
           game.updateState();
      } else {
-          // jumping back two turns so need to change turn
+          // jumping back two turns (as we arent saving computer moves in old state as minimax algo can always recreate it); so need to change turn
           game.changeTurn();
           game.updateState();
      }

@@ -138,12 +138,18 @@ button {
      align-items: center;
 }
 
+.evaluation-score {
+     text-align: center;
+     font-size: 14px;
+     height: 22px;
+}
+
 .eval-bar-container {
      width: var(--eval-bar-width);
      height: 400px;
      background-color: white;
      position: relative;
-     margin-bottom: 18px;
+     margin-bottom: 23px;
 }
 
 .eval-bar {
@@ -157,8 +163,10 @@ button {
 }
 
 .winner {
-     margin-left: 107px;
-     text-align: center;
+     font-size: 18px;
+     font-weight: 500;
+     color: #ffb703;
+     margin-right: 123px;
 }
 
 .role-wrapper {

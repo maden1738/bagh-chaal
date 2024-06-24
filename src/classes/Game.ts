@@ -1,4 +1,4 @@
-import { DIMENSIONS, EMPTY, MAXIMUM, PIECE_ROLE } from "../constants";
+import { DIMENSIONS, EMPTY, PIECE_ROLE } from "../constants";
 import { Board } from "./Board";
 import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
@@ -20,6 +20,9 @@ const tigersTrapped = document.getElementById(
 const showBestMoveInput = document.getElementById(
      "best-moves"
 ) as HTMLInputElement;
+const evaluationScore = document.querySelector(
+     ".evaluation-score"
+) as HTMLDivElement;
 
 let showBestMove = false;
 showBestMoveInput.addEventListener("change", () => {
@@ -173,50 +176,6 @@ export class Game implements IGame {
                     this.board.positions,
                     PIECE_ROLE.TIGER
                );
-
-               // for (
-               //      let startPosition = 0;
-               //      startPosition < this.board.positions.length;
-               //      startPosition++
-               // ) {
-               //      let currentPiece = this.board.positions[startPosition];
-               //      if (currentPiece === PIECE_ROLE.TIGER) {
-               //           for (let i = 0; i < OFFSETS.length; i++) {
-               //                if (numCells[startPosition][i] > 0) {
-               //                     let targetPosition =
-               //                          startPosition + OFFSETS[i];
-               //                     let targetPositionPiece =
-               //                          this.board.positions[targetPosition];
-               //                     // empty cell
-               //                     if (targetPositionPiece === 0) {
-               //                          tempMovesArr.push(
-               //                               new Move({
-               //                                    startPosition,
-               //                                    targetPosition,
-               //                               })
-               //                          );
-               //                     } else if (
-               //                          // if the cell next to goat is empty tiger can jump over the goat
-               //                          numCells[startPosition][i] > 1 &&
-               //                          targetPositionPiece ===
-               //                               PIECE_ROLE.GOAT &&
-               //                          this.board.positions[
-               //                               targetPosition + OFFSETS[i]
-               //                          ] === 0
-               //                     ) {
-               //                          tempMovesArr.push(
-               //                               new Move({
-               //                                    startPosition,
-               //                                    targetPosition:
-               //                                         targetPosition +
-               //                                         OFFSETS[i],
-               //                               })
-               //                          );
-               //                     }
-               //                }
-               //           }
-               //      }
-               // }
           }
           const uniqueTiger = new Set(
                tempMovesArr.map((move) => move.startPosition)
@@ -280,6 +239,7 @@ export class Game implements IGame {
 
      updateEvalBar() {
           const evalBar = document.querySelector(".eval-bar") as HTMLDivElement;
+          evaluationScore.innerHTML = String(this.evaluation);
           const evalBarHeight =
                DIMENSIONS.EVAL_HEIGHT -
                this.evaluation * DIMENSIONS.EVAL_HEIGHT;
@@ -349,8 +309,8 @@ export class Game implements IGame {
           const tigersTrapped = this.tigersTrapped;
           const goatsKilled = this.goatsKilled;
 
-          const evaluation = tigersTrapped * 0.25 - goatsKilled * 0.24;
-
+          let evaluation = tigersTrapped * 0.25 - goatsKilled * 0.24;
+          evaluation = parseFloat(evaluation.toPrecision(3));
           if (this.currentTurn === PIECE_ROLE.GOAT) {
                return evaluation;
           } else {
@@ -430,11 +390,7 @@ export class Game implements IGame {
                this.currentTurn
           );
 
-          if (
-               currMovesArr.length === 0 ||
-               this.goatsKilled === MAXIMUM.GOATS_KILLED ||
-               this.tigersTrapped === MAXIMUM.TIGERS_TRAPPED
-          ) {
+          if (currMovesArr.length === 0) {
                return -Infinity;
           }
 
@@ -446,6 +402,7 @@ export class Game implements IGame {
                     this.currentTurn
                );
                this.changeTurn();
+               // this.updateNumTigersTrapped();
 
                let evaluation = -this.minimax(
                     currPositions,
@@ -461,6 +418,7 @@ export class Game implements IGame {
                     currPositions,
                     this.currentTurn
                );
+               // this.updateNumTigersTrapped();
 
                if (evaluation >= beta) {
                     // prune this branch
