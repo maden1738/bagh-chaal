@@ -1,16 +1,22 @@
-// calculates the number of moves to edge from each cell
-
 let numCells: number[][] = [];
 
+/**
+ * The function calculates the number of moves to reach the edge from each cell in a 5x5 grid.
+ * @returns The function `calcNumOfCells` is returning an array `numCells` that contains the number of
+ * moves to reach the edge from each cell in a 5x5 grid. The array is populated with values calculated
+ * based on the row and column indices of each cell, considering the number of moves needed to reach
+ * the north, south, east,west, north-east, south-west, north-west, south-east edges respectively
+ */
 export function calcNumOfCells() {
      for (let row = 0; row < 5; row++) {
           for (let col = 0; col < 5; col++) {
                let cellIndex = row * 5 + col;
-               let numNorth = row;
+               let numNorth = Math.min(row, 2);
                let numSouth = Math.min(4 - row, 2);
                let numEast = Math.min(4 - col, 2);
-               let numWest = col;
+               let numWest = Math.min(col, 2);
 
+               // piece can only move in north, south, east and west direction from odd cell
                if (cellIndex % 2 === 0) {
                     numCells[cellIndex] = [
                          numNorth,
@@ -39,33 +45,31 @@ export function calcNumOfCells() {
      return numCells;
 }
 
-// north south east west north-east south-west north-west south-east
-
-// [     N, S, E, W,NE,SW,NW,SE
+//      [N, S, E, W,NE,SW,NW,SE]
 // [
 //      [0, 2, 2, 0, 0, 0, 0, 2],
 //      [0, 2, 2, 1, 0, 0, 0, 0],
 //      [0, 2, 2, 2, 0, 2, 0, 2],
-//      [0, 2, 1, 3, 0, 0, 0, 0],
-//      [0, 2, 0, 4, 0, 2, 0, 0],
+//      [0, 2, 1, 2, 0, 0, 0, 0],
+//      [0, 2, 0, 2, 0, 2, 0, 0],
 //      [1, 2, 2, 0, 0, 0, 0, 0],
 //      [1, 2, 2, 1, 1, 1, 1, 2],
 //      [1, 2, 2, 2, 0, 0, 0, 0],
-//      [1, 2, 1, 3, 1, 2, 1, 1],
-//      [1, 2, 0, 4, 0, 0, 0, 0],
+//      [1, 2, 1, 2, 1, 2, 1, 1],
+//      [1, 2, 0, 2, 0, 0, 0, 0],
 //      [2, 2, 2, 0, 2, 0, 0, 2],
 //      [2, 2, 2, 1, 0, 0, 0, 0],
 //      [2, 2, 2, 2, 2, 2, 2, 2],
-//      [2, 2, 1, 3, 0, 0, 0, 0],
-//      [2, 2, 0, 4, 0, 2, 2, 0],
-//      [3, 1, 2, 0, 0, 0, 0, 0],
-//      [3, 1, 2, 1, 2, 1, 1, 1],
-//      [3, 1, 2, 2, 0, 0, 0, 0],
-//      [3, 1, 1, 3, 1, 1, 3, 1],
-//      [3, 1, 0, 4, 0, 0, 0, 0],
-//      [4, 0, 2, 0, 2, 0, 0, 0],
-//      [4, 0, 2, 1, 0, 0, 0, 0],
-//      [4, 0, 2, 2, 2, 0, 2, 0],
-//      [4, 0, 1, 3, 0, 0, 0, 0],
-//      [4, 0, 0, 4, 0, 0, 4, 0],
+//      [2, 2, 1, 2, 0, 0, 0, 0],
+//      [2, 2, 0, 2, 0, 2, 2, 0],
+//      [2, 1, 2, 0, 0, 0, 0, 0],
+//      [2, 1, 2, 1, 2, 1, 1, 1],
+//      [2, 1, 2, 2, 0, 0, 0, 0],
+//      [2, 1, 1, 2, 1, 1, 2, 1],
+//      [2, 1, 0, 2, 0, 0, 0, 0],
+//      [2, 0, 2, 0, 2, 0, 0, 0],
+//      [2, 0, 2, 1, 0, 0, 0, 0],
+//      [2, 0, 2, 2, 2, 0, 2, 0],
+//      [2, 0, 1, 2, 0, 0, 0, 0],
+//      [2, 0, 0, 2, 0, 0, 2, 0],
 // ];

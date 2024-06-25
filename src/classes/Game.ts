@@ -1,4 +1,4 @@
-import { DIMENSIONS, EMPTY, PIECE_ROLE } from "../constants";
+import { DIMENSIONS, EMPTY, MAXIMUM, PIECE_ROLE } from "../constants";
 import { Board } from "./Board";
 import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
@@ -36,7 +36,7 @@ showBestMoveInput.addEventListener("change", () => {
      }
 });
 
-let maxDepth = 5; // max depth is 5 for reasonable computation time
+let maxDepth = 5; // max depth is 5 for instant computation time
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -86,11 +86,13 @@ export class Game implements IGame {
           this.totalTigers = 4;
 
           this.board = new Board();
+
           // initial 4 tigers
           this.board.addTiger(0);
           this.board.addTiger(4);
           this.board.addTiger(20);
           this.board.addTiger(24);
+
           this.currentTurn = PIECE_ROLE.GOAT;
           this.movesArr = this.generateMoves(
                this.board.positions,
@@ -101,8 +103,20 @@ export class Game implements IGame {
           this.stateArr = [];
      }
 
+     /**
+      * The function generates all possible moves for a given game position based on the current turn
+      * and piece placements.
+      * @param {number[]} positions - The `positions` parameter in the `generateMoves` function
+      * represents the current state of the game board, where each element in the array corresponds to
+      * a cell on the board and contains information about the piece occupying that cell (e.g., empty
+      * cell, goat, or tiger).
+      * @param {PIECE_ROLE} currentTurn - The `currentTurn` parameter in the `generateMoves` function
+      * represents the role of the player whose turn it currently is in the game. It can be either
+      * `PIECE_ROLE.GOAT` or `PIECE_ROLE.TIGER'
+      * @returns The function `generateMoves` returns an array of possible moves represented by
+      * instances of the `Move` class.
+      */
      generateMoves(positions: number[], currentTurn: PIECE_ROLE) {
-          // calulates all possible moves in a position
           let movesArr: Move[] = [];
           for (
                let startPosition = 0;
@@ -114,7 +128,7 @@ export class Game implements IGame {
                if (
                     currentTurn === PIECE_ROLE.GOAT &&
                     currentPiece === EMPTY &&
-                    this.goatsPlaced < 20
+                    this.goatsPlaced < MAXIMUM.GOATS_PLACED
                ) {
                     movesArr.push(
                          new Move({
@@ -122,23 +136,33 @@ export class Game implements IGame {
                               targetPosition: startPosition,
                          })
                     );
+
+                    continue;
                }
-               // moving goat / tiger
-               else if (currentPiece === currentTurn) {
+
+               // moving goat or tiger
+               if (currentPiece === currentTurn) {
                     // cant move goat without placing all 20 goats first
                     if (
                          currentPiece === PIECE_ROLE.GOAT &&
-                         this.goatsPlaced < 20
+                         this.goatsPlaced < MAXIMUM.GOATS_PLACED
                     ) {
                          continue;
                     }
-                    for (let i = 0; i < OFFSETS.length; i++) {
-                         if (numCells[startPosition][i] > 0) {
-                              let targetPosition = startPosition + OFFSETS[i];
+
+                    for (
+                         let offsetIndex = 0;
+                         offsetIndex < OFFSETS.length;
+                         offsetIndex++
+                    ) {
+                         if (numCells[startPosition][offsetIndex] > 0) {
+                              let targetPosition =
+                                   startPosition + OFFSETS[offsetIndex];
                               let targetPositionPiece =
                                    positions[targetPosition];
-                              // empty cell
+
                               if (targetPositionPiece === 0) {
+                                   // empty cell
                                    movesArr.push(
                                         new Move({
                                              startPosition,
@@ -148,15 +172,18 @@ export class Game implements IGame {
                               } else if (
                                    // if the cell next to goat is empty tiger can jump over the goat
                                    currentTurn === PIECE_ROLE.TIGER &&
-                                   numCells[startPosition][i] > 1 &&
+                                   numCells[startPosition][offsetIndex] > 1 &&
                                    targetPositionPiece === PIECE_ROLE.GOAT &&
-                                   positions[targetPosition + OFFSETS[i]] === 0
+                                   positions[
+                                        targetPosition + OFFSETS[offsetIndex]
+                                   ] === 0
                               ) {
                                    movesArr.push(
                                         new Move({
                                              startPosition,
                                              targetPosition:
-                                                  targetPosition + OFFSETS[i],
+                                                  targetPosition +
+                                                  OFFSETS[offsetIndex],
                                              capturedGoat: targetPosition,
                                         })
                                    );
@@ -165,12 +192,24 @@ export class Game implements IGame {
                     }
                }
           }
+
           return movesArr;
      }
 
+     /**
+      * The function `updateNumTigersTrapped` calculates the number of tigers trapped for a
+      * game state
+      * @param {Move[]} movesArr - An array of Move objects representing the possible moves in the current state of
+      * game.
+      * @param {number[]} positions - The `positions` parameter in the `updateNumTigersTrapped`
+      * function is an array that contains the current positions of all the pieces on the game board.
+      * It is used to determine the possible moves for the tigers and to check for trapped tigers
+      * @returns The function `updateNumTigersTrapped` returns the number of tigers that are trapped on
+      * the board based on the provided moves array and positions of game pieces.
+      */
      updateNumTigersTrapped(movesArr: Move[], positions: number[]) {
           let tempMovesArr = [];
-          // when its tiger's turn we can find the numbers of tigers trapped by simply looking at possible moves
+          // when its tiger's turn we can find the numbers of tigers trapped by  looking at possible moves
           if (this.currentTurn === PIECE_ROLE.TIGER) {
                tempMovesArr = [...movesArr];
           } else {
@@ -184,7 +223,7 @@ export class Game implements IGame {
           return tigersTrapped;
      }
 
-     updateDOM() {
+     updateGameInfoInDom() {
           const currentTurn = this.currentTurn === 1 ? "Tiger" : "Goat";
           currentTurnSpan.innerHTML = currentTurn;
           goatsPlacedSpan.innerHTML = String(this.goatsPlaced);
@@ -211,8 +250,11 @@ export class Game implements IGame {
                     : PIECE_ROLE.GOAT;
      }
 
+     /**
+      * The `updateState` function   updates the game state after each moves (player move or computer move).
+      */
      updateState() {
-          this.isCalculating = true;
+          this.isCalculating = true; // this flag is used to prevent users from spamming moves while computer is calculating moves
 
           this.changeTurn();
           this.updateBoard();
@@ -226,9 +268,10 @@ export class Game implements IGame {
                this.board.positions
           );
 
-          this.updateDOM();
+          this.updateGameInfoInDom();
           this.checkWinCondition();
 
+          // making expensive calculation asynchronous
           setTimeout(() => {
                const bestMove = this.findBestMove();
                this.updateEvalBar();
@@ -244,20 +287,28 @@ export class Game implements IGame {
      updateEvalBar() {
           const evalBar = document.querySelector(".eval-bar") as HTMLDivElement;
           let evaluation = this.evaluation;
+
+          // clamping evaluation value betweeen -1 and 1
           if (evaluation > 1) {
                evaluation = 1;
           } else if (evaluation < -1) {
                evaluation = -1;
           }
           evaluationScore.innerHTML = String(evaluation);
+
           const evalBarHeight =
                DIMENSIONS.EVAL_HEIGHT - evaluation * DIMENSIONS.EVAL_HEIGHT;
+
           evalBar.style.height = `${evalBarHeight}px`;
      }
 
-     // move ai piece
+     /**
+      * The `makeMove` function updates the game board with the computer's move and then updates the
+      * game state.
+      * @param {Move} computerMove - The `computerMove` parameter represents the best move calculated
+      * for computer. This move is used to update the game board positions
+      */
      makeMove(computerMove: Move) {
-          // this.storeCurrentState();
           this.board.positions = this.updatePosition(
                computerMove,
                this.board.positions,
@@ -266,7 +317,20 @@ export class Game implements IGame {
           this.updateState();
      }
 
-     //make move
+     /**
+      * The updatePosition  updates the provided positions array based on the move and current
+      * turn information provided
+      * @param {Move} move - The move object is the move to be made
+      * @param {number[]} positions - The `positions` parameter is an array representing the current
+      * positions of the game pieces on the board. The elements in the array correspond to different
+      * positions on the board, and the values indicate the type of game piece at that position (e.g.,
+      * goat, tiger, or empty).
+      * @param {number} currentTurn - The `currentTurn` parameter represents the current turn in the
+      * game.
+      * @returns The `updatePosition` function returns the updated `tempPositions` array after applying
+      * the move based on the input parameters such as `startPosition`, `targetPosition`, `capturedGoat`,
+      * `positions`, and `currentTurn`.
+      */
      updatePosition(
           { startPosition, targetPosition, capturedGoat }: Move,
           positions: number[],
@@ -289,7 +353,19 @@ export class Game implements IGame {
           return tempPositions;
      }
 
-     // unmake the provided move
+     /**
+      * The restorePosition function   restores  the game board positions  by
+      * updating the positions array based on the move to be unmade and current turn.
+      * @param {Move}  move - The 'move' object is the move to be unmade
+      * @param {number[]} positions - The `positions` parameter is an array that represents the current
+      * state of the game board. Each element in the array corresponds to a specific position on the
+      * board and contains information about what piece is currently occupying that position.
+      * @param {number} currentTurn - The `currentTurn` parameter represents the current turn in the
+      * game. It is used to determine whether the player controlling the pieces is playing as a goat or a
+      * tiger.
+      * @returns The `restorePosition` function returns an array of numbers representing the updated
+      * positions after a move has been made.
+      */
      restorePosition(
           { startPosition, targetPosition, capturedGoat }: Move,
           positions: number[],
@@ -314,6 +390,18 @@ export class Game implements IGame {
           return tempPositions;
      }
 
+     /**
+      * The function evaluates the game state based on the number of tigers trapped and goats killed,
+      * adjusting the evaluation based on the current turn role.
+      * @param {Move[]} movesArr - An array of Move objects representing the legal moves for the current position.
+      * @param {number[]} positions - The `positions` parameter is an array that represents the current
+      * state of the game board. Each element in the array corresponds to a specific position on the
+      * board and contains information about what piece is currently occupying that position.
+      * @returns The `evaluate` function is returning the evaluation score based on the number of tigers
+      * trapped and goats killed in the game. If it is the goat's turn, the evaluation score is returned
+      * as is. If it is the tiger's turn, the evaluation score is multiplied by -1 before being
+      * returned.
+      */
      evaluate(movesArr: Move[], positions: number[]): number {
           const tigersTrapped = this.updateNumTigersTrapped(
                movesArr,
@@ -330,6 +418,10 @@ export class Game implements IGame {
           }
      }
 
+     /**
+      * The `storeCurrentState` function  stores the current state of the game board,
+      * including positions, goats placed, and goats killed, in  stateArr array.
+      */
      storeCurrentState() {
           this.stateArr.push({
                positions: [...this.board.positions],
@@ -338,6 +430,13 @@ export class Game implements IGame {
           });
      }
 
+     /**
+      * The `findBestMove` function  implements a minimax algorithm with alpha-beta pruning
+      * to determine the best move for a player in a board game.
+      * @returns The `findBestMove()` function returns the best move (an object of type `Move`) based on
+      * the evaluation of possible moves using the minimax algorithm with alpha-beta pruning. The best
+      * move is determined by maximizing the evaluation score for the current player's turn.
+      */
      findBestMove(): Move {
           let currPositions = [...this.board.positions];
           let currMovesArr = this.generateMoves(
@@ -396,6 +495,24 @@ export class Game implements IGame {
           return bestMove;
      }
 
+     /**
+      * The minimax function  is used for implementing the minimax algorithm with
+      * alpha-beta pruning for game AI decision-making.
+      * @param {number[]} positions -   The `positions` parameter is an array that represents the current
+      * state of the game board. Each element in the array corresponds to a specific position on the
+      * board and contains information about what piece is currently occupying that position.
+      * @param {number} depth - The `depth` parameter in the minimax algorithm represents how many
+      * levels deep the algorithm should search in the game tree. A higher depth allows for a more
+      * thorough search of possible moves and outcomes, but it also increases the computational
+      * complexity of the algorithm. Typically, a higher depth results in better decision-making
+      * @param {number} alpha - Alpha is the best value that the maximizing player can currently
+      * guarantee at that level or above. It represents the lower bound of possible scores for the
+      * maximizing player.
+      * @param {number} beta - The best value that the minimizing player (the opponent) can guarantee at any point. The
+      * algorithm uses beta to determine whether to prune branches during the search.
+      * @returns The `minimax` function is returning the alpha value, which represents the best possible
+      * score that the maximizing player can achieve.
+      */
      minimax(positions: number[], depth: number, alpha: number, beta: number) {
           let currPositions = [...positions];
           let currMovesArr = this.generateMoves(
@@ -418,7 +535,6 @@ export class Game implements IGame {
                     this.currentTurn
                );
                this.changeTurn();
-               // this.updateNumTigersTrapped();
 
                let evaluation = -this.minimax(
                     currPositions,
@@ -434,7 +550,6 @@ export class Game implements IGame {
                     currPositions,
                     this.currentTurn
                );
-               // this.updateNumTigersTrapped();
 
                if (evaluation >= beta) {
                     // prune this branch
@@ -446,8 +561,11 @@ export class Game implements IGame {
           return alpha;
      }
 
+     /**
+      * The `updateBoard` function updates the game board by displaying the correct image for each cell
+      * based on the  state of `board.positions` array.
+      */
      updateBoard() {
-          // displayin correct image for each cell
           const cells = document.querySelectorAll<HTMLDivElement>(".cell");
 
           for (let i = 0; i < this.board.positions.length; i++) {

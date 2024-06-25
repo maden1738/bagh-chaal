@@ -63,9 +63,10 @@ export class Board implements IBoard {
                cell.style.border = "0px";
           });
           for (let i = 0; i < possibleMoves.length; i++) {
-               let possibleMove = possibleMoves[i];
+               const possibleMove = possibleMoves[i];
+
                if (possibleMove.startPosition === clickedPiece.position) {
-                    let possibleCell = cells[possibleMove.targetPosition];
+                    const possibleCell = cells[possibleMove.targetPosition];
                     possibleCell.style.border = "1.5px solid #dbc251";
                }
           }
