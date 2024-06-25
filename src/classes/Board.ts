@@ -21,7 +21,7 @@ export class Board implements IBoard {
       * to 0, you are essentially clearing the cell or making it empty.
       */
      emptyCell(position: number) {
-          this.positions[position] = 0;
+          this.positions[position] = EMPTY;
      }
 
      /**

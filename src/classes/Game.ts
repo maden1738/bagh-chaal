@@ -160,8 +160,7 @@ export class Game implements IGame {
                               let targetPositionPiece =
                                    positions[targetPosition];
 
-                              if (targetPositionPiece === 0) {
-                                   // empty cell
+                              if (targetPositionPiece === EMPTY) {
                                    movesArr.push(
                                         new Move({
                                              startPosition,
@@ -175,7 +174,7 @@ export class Game implements IGame {
                                    targetPositionPiece === PIECE_ROLE.GOAT &&
                                    positions[
                                         targetPosition + OFFSETS[offsetIndex]
-                                   ] === 0
+                                   ] === EMPTY
                               ) {
                                    movesArr.push(
                                         new Move({
@@ -223,7 +222,8 @@ export class Game implements IGame {
      }
 
      updateGameInfoInDom() {
-          const currentTurn = this.currentTurn === 1 ? "Tiger" : "Goat";
+          const currentTurn =
+               this.currentTurn === PIECE_ROLE.TIGER ? "Tiger" : "Goat";
           currentTurnSpan.innerHTML = currentTurn;
           goatsPlacedSpan.innerHTML = String(this.goatsPlaced);
           goatsKilled.innerHTML = String(this.goatsKilled);
@@ -507,7 +507,6 @@ export class Game implements IGame {
                     this.currentTurn
                );
                this.changeTurn();
-               console.log(depth);
 
                let evaluation = -this.minimax(
                     currPositions,

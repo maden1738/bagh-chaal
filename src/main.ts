@@ -30,17 +30,6 @@ let clickedPiece: ClickedPiece = {
      position: null,
 };
 
-let player1 = new Player({
-     name: "player1",
-     piece: PIECE_ROLE.TIGER,
-     isComputer: false,
-});
-let player2 = new Player({
-     name: "player2",
-     piece: PIECE_ROLE.GOAT,
-     isComputer: false,
-});
-
 showBestMoveInput.addEventListener("change", () => {
      if (showBestMoveInput.checked) {
           game.board.highlightBestMove(game.findBestMove());
@@ -64,6 +53,16 @@ startBtn.addEventListener("click", () => {
      startGame();
 });
 
+let player1 = new Player({
+     name: "player1",
+     piece: PIECE_ROLE.TIGER,
+     isComputer: false,
+});
+let player2 = new Player({
+     name: "player2",
+     piece: PIECE_ROLE.GOAT,
+     isComputer: false,
+});
 let game = new Game({ player1, player2, vsComputer: false });
 
 function startGame() {
@@ -99,16 +98,6 @@ function startGame() {
                }
           }, 0);
      } else {
-          player1 = new Player({
-               name: "player1",
-               piece: PIECE_ROLE.TIGER,
-               isComputer: false,
-          });
-          player2 = new Player({
-               name: "player2",
-               piece: PIECE_ROLE.GOAT,
-               isComputer: false,
-          });
           game.board.draw();
           game.updateBoard();
      }
