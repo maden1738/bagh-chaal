@@ -25,6 +25,7 @@ const showBestMoveInput = document.getElementById(
 const evaluationScore = document.querySelector(
      ".evaluation-score"
 ) as HTMLDivElement;
+const pieceAudio = document.getElementById("piece-audio") as HTMLAudioElement;
 
 let showBestMove = false;
 showBestMoveInput.addEventListener("change", () => {
@@ -454,8 +455,10 @@ export class Game implements IGame {
                cell.style.border = "0px";
                cell.style.backgroundColor = "transparent";
                if (this.board.positions[i] === PIECE_ROLE.TIGER) {
+                    pieceAudio.play();
                     cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
                } else if (this.board.positions[i] === PIECE_ROLE.GOAT) {
+                    pieceAudio.play();
                     cell.innerHTML = `<img src=${goatIcon} alt='Goat'>`;
                } else if (
                     this.board.positions[i] === EMPTY &&
