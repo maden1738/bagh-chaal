@@ -5,6 +5,8 @@ import { calcNumOfCells } from "../utils/calcNumCells";
 import { Move } from "./Move";
 import { Player } from "./Player";
 import { displayWinner } from "../main";
+import tigerIcon from "../assets/tiger.png";
+import goatIcon from "../assets/goat.png";
 
 const numCells = calcNumOfCells();
 const currentTurnSpan = document.getElementById(
@@ -210,9 +212,9 @@ export class Game implements IGame {
 
      updateState() {
           this.isCalculating = true;
-          this.board.updateBoard();
 
           this.changeTurn();
+          this.updateBoard();
           this.movesArr = this.generateMoves(
                this.board.positions,
                this.currentTurn
@@ -350,7 +352,7 @@ export class Game implements IGame {
           let bestEvaluation = -Infinity;
           let depth = maxDepth;
           if (this.goatsPlaced >= 15) {
-               depth = 8;
+               depth = depth + 2;
           }
 
           for (let i = 0; i < currMovesArr.length; i++) {
@@ -441,5 +443,29 @@ export class Game implements IGame {
                alpha = Math.max(alpha, evaluation);
           }
           return alpha;
+     }
+
+     updateBoard() {
+          // displayin correct image for each cell
+          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+
+          for (let i = 0; i < this.board.positions.length; i++) {
+               let cell = cells[i];
+               cell.style.border = "0px";
+               cell.style.backgroundColor = "transparent";
+               if (this.board.positions[i] === PIECE_ROLE.TIGER) {
+                    cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
+               } else if (this.board.positions[i] === PIECE_ROLE.GOAT) {
+                    cell.innerHTML = `<img src=${goatIcon} alt='Goat'>`;
+               } else if (
+                    this.board.positions[i] === EMPTY &&
+                    this.currentTurn == PIECE_ROLE.GOAT &&
+                    this.goatsPlaced < 20
+               ) {
+                    cell.innerHTML = `<img src=${goatIcon} alt='Goat' style='opacity: 0.3'>`;
+               } else {
+                    cell.innerHTML = "";
+               }
+          }
      }
 }

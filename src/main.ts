@@ -48,7 +48,7 @@ showBestMoveInput.addEventListener("change", () => {
      if (showBestMoveInput.checked) {
           game.board.highlightBestMove(game.findBestMove());
      } else {
-          game.board.updateBoard();
+          game.updateBoard();
      }
 });
 
@@ -92,7 +92,7 @@ function startGame() {
           });
           game = new Game({ player1, player2, vsComputer: true });
           game.board.drawBoard();
-          game.board.updateBoard();
+          game.updateBoard();
           setTimeout(() => {
                const bestMove = game.findBestMove();
                if (player2.piece === PIECE_ROLE.GOAT) {
@@ -111,7 +111,7 @@ function startGame() {
                isComputer: false,
           });
           game.board.drawBoard();
-          game.board.updateBoard();
+          game.updateBoard();
      }
      showBestMoveElement.style.display = "flex";
 }

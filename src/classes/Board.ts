@@ -1,6 +1,4 @@
 // import { PIECE_ROLE } from "../constants";
-import tigerIcon from "../assets/tiger.png";
-import goatIcon from "../assets/goat.png";
 import { EMPTY, PIECE_ROLE } from "../constants";
 import { handleBoardClick } from "../main";
 import { Move } from "./Move";
@@ -44,30 +42,6 @@ export class Board implements IBoard {
                boardElement.appendChild(cell);
           }
      }
-     updateBoard() {
-          // displayin correct image for each cell
-          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
-
-          for (let i = 0; i < this.positions.length; i++) {
-               let cell = cells[i];
-               cell.style.border = "0px";
-               cell.style.backgroundColor = "transparent";
-               if (this.positions[i] === PIECE_ROLE.TIGER) {
-                    cell.innerHTML = `<img src=${tigerIcon} alt='Tiger'>`;
-               } else if (this.positions[i] === PIECE_ROLE.GOAT) {
-                    cell.innerHTML = `<img src=${goatIcon} alt='Goat'>`;
-               } else {
-                    cell.innerHTML = "";
-               }
-          }
-     }
-
-     // highlightGoatPlaceableCell() {
-     //      const cells = document.querySelectorAll<HTMLDivElement>(".cell");
-     //      for (let i = 0; i < this.positions.length; i++) {
-     //           const cell = cells[i];
-     //      }
-     // }
 
      highlightBestMove(bestMove: Move) {
           const cells = document.querySelectorAll<HTMLDivElement>(".cell");
