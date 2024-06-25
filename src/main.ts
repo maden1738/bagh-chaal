@@ -1,7 +1,24 @@
 import "./style.css";
 import { Game } from "./classes/Game";
-import { GAME_MODE, PIECE_ROLE, PLAYER_ROLE } from "./constants";
+import {
+     EMPTY,
+     GAME_MODE,
+     MAXIMUM,
+     PIECE_ROLE,
+     PLAYER_ROLE,
+} from "./constants";
 import { Player } from "./classes/Player";
+import {
+     showBestMoveInput,
+     gameModeInput,
+     roleWrapper,
+     undoBtn,
+     startBtn,
+     gameSettings,
+     gameElement,
+     role,
+     showBestMoveElement,
+} from "./elements";
 
 export type ClickedPiece = {
      piece: PIECE_ROLE | null;
@@ -24,26 +41,6 @@ let player2 = new Player({
      isComputer: false,
 });
 
-let game = new Game({ player1, player2, vsComputer: false });
-
-const gameSettings = document.querySelector(".game-settings") as HTMLDivElement;
-const gameModeInput = document.getElementById("game-mode") as HTMLSelectElement;
-const role = document.getElementById("role") as HTMLSelectElement;
-const startBtn = document.querySelector(".start-btn") as HTMLButtonElement;
-const gameElement = document.querySelector(".game") as HTMLDivElement;
-const roleWrapper = document.querySelector(".role-wrapper") as HTMLDivElement;
-const winnerElement = document.querySelector(".winner") as HTMLDivElement;
-const undoBtn = document.querySelector(".undo-btn") as HTMLButtonElement;
-const showBestMoveElement = document.querySelector(
-     ".best-moves"
-) as HTMLDivElement;
-const cellsElements = document.querySelectorAll(
-     ".cell"
-) as NodeListOf<HTMLDivElement>;
-const showBestMoveInput = document.getElementById(
-     "best-moves"
-) as HTMLInputElement;
-
 showBestMoveInput.addEventListener("change", () => {
      if (showBestMoveInput.checked) {
           game.board.highlightBestMove(game.findBestMove());
@@ -60,12 +57,14 @@ undoBtn.addEventListener("click", () => {
      if (game.stateArr.length <= 0) {
           return;
      }
-     undoMove();
+     game.undoMove();
 });
 
 startBtn.addEventListener("click", () => {
      startGame();
 });
+
+let game = new Game({ player1, player2, vsComputer: false });
 
 function startGame() {
      gameSettings.style.display = "none";
@@ -91,7 +90,7 @@ function startGame() {
                isComputer: true,
           });
           game = new Game({ player1, player2, vsComputer: true });
-          game.board.drawBoard();
+          game.board.draw();
           game.updateBoard();
           setTimeout(() => {
                const bestMove = game.findBestMove();
@@ -110,65 +109,58 @@ function startGame() {
                piece: PIECE_ROLE.GOAT,
                isComputer: false,
           });
-          game.board.drawBoard();
+          game.board.draw();
           game.updateBoard();
      }
      showBestMoveElement.style.display = "flex";
 }
 
-function undoMove() {
-     winnerElement.innerHTML = "";
-     let lastState;
-     lastState = game.stateArr.pop();
-     if (lastState) {
-          game.board.positions = [...lastState.positions];
-          game.goatsKilled = lastState.goatsKilled;
-          game.goatsPlaced = lastState.goatsPlaced;
-     }
-     if (!game.vsComputer) {
-          game.updateState();
-     } else {
-          // jumping back two turns (as we arent saving computer moves in old state as minimax algo can always recreate it); so need to change turn
-          game.changeTurn();
-          game.updateState();
-     }
-}
-
-export function displayWinner(winnerPiece: number, winCondition: string) {
-     winnerElement.innerHTML = `${
-          winnerPiece === PIECE_ROLE.GOAT ? "Goat" : "Tiger"
-     } won by ${winCondition}`;
-
-     cellsElements.forEach((cell) => {
-          cell.removeEventListener("click", handleBoardClick);
-     });
-}
-
+/**
+ * The function `handleBoardClick`  handles user clicks on a game board, allowing players
+ * to place pieces and make moves according to game rules.
+ * @param {MouseEvent} event - The `event` parameter in the `handleBoardClick` function is a MouseEvent
+ * object that represents an event triggered by a user's interaction with the board. It contains
+ * information about the event such as the type of event, the target element that triggered the event,
+ * and any additional data related to the event
+ * @returns If the function encounters certain conditions, it will return early and not execute the
+ * rest of the code block. The conditions that would cause the function to return early are:
+ * 1. If `game.isCalculating` is true
+ * 2. If `game.vsComputer` is true and it is not player1's(human) turn
+ * 3. If a goat is clicked before placing all goats
+ */
 export function handleBoardClick(event: MouseEvent) {
+     const targetPosition = parseInt(
+          (event.currentTarget as HTMLDivElement).dataset.id || "0"
+     );
+
      if (game.isCalculating) {
           return;
      }
      if (game.vsComputer && game.currentTurn !== player1.piece) {
           return;
      }
-     const targetPosition = parseInt(
-          (event.currentTarget as HTMLDivElement).dataset.id || "0"
-     );
 
      // clicking on empty cell and no piece clicked on last move
-     if (game.board.positions[targetPosition] === 0 && !clickedPiece.piece) {
-          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
-               game.storeCurrentState();
-               game.board.addGoat(targetPosition);
-               game.goatsPlaced++;
-               game.updateState();
-          }
+     if (
+          game.board.positions[targetPosition] === EMPTY &&
+          !clickedPiece.piece &&
+          game.currentTurn === PIECE_ROLE.GOAT &&
+          game.goatsPlaced < MAXIMUM.GOATS_PLACED
+     ) {
+          game.storeCurrentState();
+          game.board.addGoat(targetPosition);
+          game.goatsPlaced++;
+          game.updateState();
      }
      // clicking a piece
      else if (game.board.positions[targetPosition] === game.currentTurn) {
-          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+          if (
+               game.currentTurn === PIECE_ROLE.GOAT &&
+               game.goatsPlaced < MAXIMUM.GOATS_PLACED
+          ) {
                return;
           }
+
           clickedPiece = {
                piece: game.board.positions[targetPosition],
                position: targetPosition,
@@ -179,10 +171,13 @@ export function handleBoardClick(event: MouseEvent) {
      else if (
           clickedPiece.piece === game.currentTurn &&
           clickedPiece.position != null &&
-          game.board.positions[targetPosition] === 0
+          game.board.positions[targetPosition] === EMPTY
      ) {
           // cannot move goat before all 20 goats have been placed
-          if (game.currentTurn === PIECE_ROLE.GOAT && game.goatsPlaced < 20) {
+          if (
+               game.currentTurn === PIECE_ROLE.GOAT &&
+               game.goatsPlaced < MAXIMUM.GOATS_PLACED
+          ) {
                return;
           }
           let startPosition = clickedPiece.position;
@@ -192,11 +187,12 @@ export function handleBoardClick(event: MouseEvent) {
                     move.targetPosition === targetPosition
           );
           if (foundMove) {
+               // legal move
                game.storeCurrentState();
-               game.board.positions[startPosition] = 0;
+               game.board.emptyCell(startPosition);
                game.board.positions[targetPosition] = clickedPiece.piece;
                if (foundMove.capturedGoat) {
-                    game.board.positions[foundMove.capturedGoat] = 0;
+                    game.board.emptyCell(foundMove.capturedGoat);
                     game.goatsKilled++;
                }
                clickedPiece = { piece: null, position: null };

@@ -4,28 +4,19 @@ import { OFFSETS } from "../constants";
 import { calcNumOfCells } from "../utils/calcNumCells";
 import { Move } from "./Move";
 import { Player } from "./Player";
-import { displayWinner } from "../main";
+import { handleBoardClick } from "../main";
 import tigerIcon from "../assets/tiger.png";
 import goatIcon from "../assets/goat.png";
-
-const numCells = calcNumOfCells();
-const currentTurnSpan = document.getElementById(
-     "current-turn"
-) as HTMLSpanElement;
-const goatsPlacedSpan = document.getElementById(
-     "goats-placed"
-) as HTMLSpanElement;
-const goatsKilled = document.getElementById("goats-killed") as HTMLSpanElement;
-const tigersTrapped = document.getElementById(
-     "tigers-trapped"
-) as HTMLSpanElement;
-const showBestMoveInput = document.getElementById(
-     "best-moves"
-) as HTMLInputElement;
-const evaluationScore = document.querySelector(
-     ".evaluation-score"
-) as HTMLDivElement;
-const pieceAudio = document.getElementById("piece-audio") as HTMLAudioElement;
+import {
+     showBestMoveInput,
+     currentTurnSpan,
+     goatsPlacedSpan,
+     goatsKilled,
+     tigersTrapped,
+     evaluationScore,
+     pieceAudio,
+     winnerElement,
+} from "../elements";
 
 let showBestMove = false;
 showBestMoveInput.addEventListener("change", () => {
@@ -37,6 +28,7 @@ showBestMoveInput.addEventListener("change", () => {
 });
 
 let maxDepth = 5; // max depth is 5 for instant computation time
+const numCells = calcNumOfCells();
 
 interface IGame {
      currentTurn: PIECE_ROLE;
@@ -44,6 +36,13 @@ interface IGame {
      tigersTrapped: number;
      totalGoats: number;
      totalTigers: number;
+     movesArr: Move[];
+     player1: Player;
+     player2: Player;
+     vsComputer: boolean;
+     isCalculating: boolean;
+     evaluation: number;
+     stateArr: State[];
 }
 
 type GameProps = {
@@ -231,15 +230,40 @@ export class Game implements IGame {
           tigersTrapped.innerHTML = String(this.tigersTrapped);
      }
 
+     /**
+      * The function `displayWinner` updates the UI to show the winner and win condition, and removes click
+      * event listeners from all cells.
+      * @param {number} winnerPiece - The `winnerPiece` parameter is a number that represents the winning
+      * player's piece in a game. It is used to determine whether the winner is a "Goat" or a "Tiger".
+      * @param {string} winCondition - The `winCondition` parameter represents the condition under which the
+      * game was won. It could be something like "three in a row" or "corner capture".
+      */
+     displayWinner(winnerPiece: number, winCondition: string) {
+          winnerElement.innerHTML = `${
+               winnerPiece === PIECE_ROLE.GOAT ? "Goat" : "Tiger"
+          } won by ${winCondition}`;
+
+          const cells = document.querySelectorAll<HTMLDivElement>(".cell");
+          cells.forEach((cell) => {
+               cell.removeEventListener("click", handleBoardClick);
+          });
+     }
+
      checkWinCondition() {
           if (this.movesArr.length === 0) {
                if (this.currentTurn == PIECE_ROLE.TIGER) {
-                    displayWinner(PIECE_ROLE.GOAT, "blocking all tiger moves");
+                    this.displayWinner(
+                         PIECE_ROLE.GOAT,
+                         "blocking all tiger moves"
+                    );
                } else {
-                    displayWinner(PIECE_ROLE.TIGER, "blocking all goat moves");
+                    this.displayWinner(
+                         PIECE_ROLE.TIGER,
+                         "blocking all goat moves"
+                    );
                }
           } else if (this.goatsKilled >= 5) {
-               displayWinner(PIECE_ROLE.TIGER, "capturing 5 goats");
+               this.displayWinner(PIECE_ROLE.TIGER, "capturing 5 goats");
           }
      }
 
@@ -431,6 +455,26 @@ export class Game implements IGame {
      }
 
      /**
+      * The `undoMove` function reverts the game state to the previous state, including positions, goats
+      * killed, and goats placed, and updates the game accordingly.
+      */
+     undoMove() {
+          winnerElement.innerHTML = "";
+          let lastState;
+          lastState = this.stateArr.pop();
+          if (lastState) {
+               this.board.positions = [...lastState.positions];
+               this.goatsKilled = lastState.goatsKilled;
+               this.goatsPlaced = lastState.goatsPlaced;
+          }
+          if (this.vsComputer) {
+               // changing turn as we arent saving computer moves in old state since minimax algo can always recreate it
+               this.changeTurn();
+          }
+          this.updateState();
+     }
+
+     /**
       * The `findBestMove` function  implements a minimax algorithm with alpha-beta pruning
       * to determine the best move for a player in a board game.
       * @returns The `findBestMove()` function returns the best move (an object of type `Move`) based on
@@ -506,8 +550,7 @@ export class Game implements IGame {
       * thorough search of possible moves and outcomes, but it also increases the computational
       * complexity of the algorithm. Typically, a higher depth results in better decision-making
       * @param {number} alpha - Alpha is the best value that the maximizing player can currently
-      * guarantee at that level or above. It represents the lower bound of possible scores for the
-      * maximizing player.
+      * guarantee at any point
       * @param {number} beta - The best value that the minimizing player (the opponent) can guarantee at any point. The
       * algorithm uses beta to determine whether to prune branches during the search.
       * @returns The `minimax` function is returning the alpha value, which represents the best possible
@@ -536,6 +579,7 @@ export class Game implements IGame {
                );
                this.changeTurn();
 
+               // negating evaluation because a position good for opponent is bad for us and vice versa
                let evaluation = -this.minimax(
                     currPositions,
                     depth - 1,
@@ -552,7 +596,7 @@ export class Game implements IGame {
                );
 
                if (evaluation >= beta) {
-                    // prune this branch
+                    // prune this branch, as opponent will avoid this position. So, there is  no need to futher explore this branch
                     return beta;
                }
 
