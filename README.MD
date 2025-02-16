@@ -8,8 +8,8 @@ This repository is a Vite project configured with TypeScript. Follow the instruc
 
 Before you begin, ensure you have the following installed on your local machine:
 
--    [Node.js](https://nodejs.org/en/) (version 14 or higher)
--    [npm](https://www.npmjs.com/) (Node package manager, comes with Node.js)
+- [Node.js](https://nodejs.org/en/) (version 14 or higher)
+- [npm](https://www.npmjs.com/) (Node package manager, comes with Node.js)
 
 ## Getting Started
 

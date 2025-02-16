@@ -8,41 +8,41 @@ let numCells: number[][] = [];
  * the north, south, east,west, north-east, south-west, north-west, south-east edges respectively
  */
 export function calcNumOfCells() {
-     for (let row = 0; row < 5; row++) {
-          for (let col = 0; col < 5; col++) {
-               let cellIndex = row * 5 + col;
-               let numNorth = Math.min(row, 2);
-               let numSouth = Math.min(4 - row, 2);
-               let numEast = Math.min(4 - col, 2);
-               let numWest = Math.min(col, 2);
+  for (let row = 0; row < 5; row++) {
+    for (let col = 0; col < 5; col++) {
+      let cellIndex = row * 5 + col;
+      let numNorth = Math.min(row, 2);
+      let numSouth = Math.min(4 - row, 2);
+      let numEast = Math.min(4 - col, 2);
+      let numWest = Math.min(col, 2);
 
-               // piece can only move in north, south, east and west direction from odd cell
-               if (cellIndex % 2 === 0) {
-                    numCells[cellIndex] = [
-                         numNorth,
-                         numSouth,
-                         numEast,
-                         numWest,
-                         Math.min(numNorth, numEast),
-                         Math.min(numSouth, numWest),
-                         Math.min(numNorth, numWest),
-                         Math.min(numSouth, numEast),
-                    ];
-               } else {
-                    numCells[cellIndex] = [
-                         numNorth,
-                         numSouth,
-                         numEast,
-                         numWest,
-                         0,
-                         0,
-                         0,
-                         0,
-                    ];
-               }
-          }
-     }
-     return numCells;
+      // piece can only move in north, south, east and west direction from odd cell
+      if (cellIndex % 2 === 0) {
+        numCells[cellIndex] = [
+          numNorth,
+          numSouth,
+          numEast,
+          numWest,
+          Math.min(numNorth, numEast),
+          Math.min(numSouth, numWest),
+          Math.min(numNorth, numWest),
+          Math.min(numSouth, numEast),
+        ];
+      } else {
+        numCells[cellIndex] = [
+          numNorth,
+          numSouth,
+          numEast,
+          numWest,
+          0,
+          0,
+          0,
+          0,
+        ];
+      }
+    }
+  }
+  return numCells;
 }
 
 //      [N, S, E, W,NE,SW,NW,SE]

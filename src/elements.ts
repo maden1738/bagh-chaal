@@ -1,43 +1,43 @@
 export const currentTurnSpan = document.getElementById(
-     "current-turn"
+  'current-turn'
 ) as HTMLSpanElement;
 export const goatsPlacedSpan = document.getElementById(
-     "goats-placed"
+  'goats-placed'
 ) as HTMLSpanElement;
 export const goatsKilled = document.getElementById(
-     "goats-killed"
+  'goats-killed'
 ) as HTMLSpanElement;
 export const tigersTrapped = document.getElementById(
-     "tigers-trapped"
+  'tigers-trapped'
 ) as HTMLSpanElement;
 export const evaluationScore = document.querySelector(
-     ".evaluation-score"
+  '.evaluation-score'
 ) as HTMLDivElement;
 export const pieceAudio = document.getElementById(
-     "piece-audio"
+  'piece-audio'
 ) as HTMLAudioElement;
 export const gameSettings = document.querySelector(
-     ".game-settings"
+  '.game-settings'
 ) as HTMLDivElement;
 export const gameModeInput = document.getElementById(
-     "game-mode"
+  'game-mode'
 ) as HTMLSelectElement;
-export const role = document.getElementById("role") as HTMLSelectElement;
+export const role = document.getElementById('role') as HTMLSelectElement;
 export const startBtn = document.querySelector(
-     ".start-btn"
+  '.start-btn'
 ) as HTMLButtonElement;
-export const gameElement = document.querySelector(".game") as HTMLDivElement;
+export const gameElement = document.querySelector('.game') as HTMLDivElement;
 export const roleWrapper = document.querySelector(
-     ".role-wrapper"
+  '.role-wrapper'
 ) as HTMLDivElement;
 export const winnerElement = document.querySelector(
-     ".winner"
+  '.winner'
 ) as HTMLDivElement;
-export const undoBtn = document.querySelector(".undo-btn") as HTMLButtonElement;
+export const undoBtn = document.querySelector('.undo-btn') as HTMLButtonElement;
 export const showBestMoveElement = document.querySelector(
-     ".best-moves"
+  '.best-moves'
 ) as HTMLDivElement;
 export const showBestMoveInput = document.getElementById(
-     "best-moves"
+  'best-moves'
 ) as HTMLInputElement;
-export const boardElement = document.getElementById("board") as HTMLDivElement;
+export const boardElement = document.getElementById('board') as HTMLDivElement;
